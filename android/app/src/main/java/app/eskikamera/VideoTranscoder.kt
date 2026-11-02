@@ -51,7 +51,23 @@ object VideoTranscoder {
             val primaryType = if (mode.container == "3gp") MediaMuxer.OutputFormat.MUXER_OUTPUT_3GPP else MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4
             val vTmp = File(work, "v.tmp")
             val aTmp = File(work, "a.tmp")
-            val vInfo = encodeVideo(context, src, vIdx, device, mode, look, vTmp, primaryType, durationUs, log) { progress(it * 0.9f) }
+            val wanted = wantedMime(mode)
+            val candidates = if (wanted == "video/avc") listOf("video/avc") else listOf(wanted, "video/avc")
+            var vInfo: String? = null
+            var lastError: Exception? = null
+            for ((n, mime) in candidates.withIndex()) {
+                try {
+                    vTmp.delete()
+                    vInfo = encodeVideo(context, src, vIdx, device, mode, look, vTmp, primaryType, durationUs, mime, log) { progress(it * 0.9f) }
+                    if (mime != wanted) log("Bu telefonda ${mode.codec} ile kodlanamadı, H.264 kullanıldı")
+                    break
+                } catch (e: Exception) {
+                    lastError = e
+                    log("Video kodlama $mime ile olmadı: ${e.javaClass.simpleName}: ${e.message}")
+                    if (n == candidates.size - 1) throw ProcessException("Video kodlanamadı: ${e.message}", e)
+                }
+            }
+            if (vInfo == null) throw ProcessException("Video kodlanamadı: ${lastError?.message}", lastError)
             var aInfo = "ses yok"
             if (aIdx >= 0) {
                 aInfo = encodeAudio(context, src, aIdx, mode, aTmp, primaryType, log)
@@ -97,30 +113,25 @@ object VideoTranscoder {
 
     private class Enc(val codec: MediaCodec, val mime: String)
 
-    private fun createVideoEncoder(mode: VideoMode, log: (String) -> Unit): Enc {
-        val wanted = when (mode.codec) { "h263" -> "video/3gpp"; "mpeg4" -> "video/mp4v-es"; else -> "video/avc" }
-        val candidates = if (wanted == "video/avc") listOf("video/avc") else listOf(wanted, "video/avc")
-        var lastError: Exception? = null
-        for (mime in candidates) {
-            var codec: MediaCodec? = null
-            try {
-                val f = MediaFormat.createVideoFormat(mime, mode.width, mode.height)
-                f.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
-                f.setInteger(MediaFormat.KEY_BIT_RATE, mode.videoKbps * 1000)
-                f.setInteger(MediaFormat.KEY_FRAME_RATE, mode.fps)
-                f.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
-                codec = MediaCodec.createEncoderByType(mime)
-                codec.configure(f, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-                codec.start()
-                if (mime != wanted) log("Bu telefonda ${mode.codec} kodlayıcısı yok, H.264 kullanıldı")
-                return Enc(codec, mime)
-            } catch (e: Exception) {
-                lastError = e
-                log("Kodlayıcı $mime kullanılamadı: ${e.message}")
-                try { codec?.release() } catch (_: Exception) { }
-            }
+    private fun wantedMime(mode: VideoMode): String =
+        when (mode.codec) { "h263" -> "video/3gpp"; "mpeg4" -> "video/mp4v-es"; else -> "video/avc" }
+
+    private fun createVideoEncoder(mode: VideoMode, mime: String): Enc {
+        var codec: MediaCodec? = null
+        try {
+            val f = MediaFormat.createVideoFormat(mime, mode.width, mode.height)
+            f.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
+            f.setInteger(MediaFormat.KEY_BIT_RATE, mode.videoKbps * 1000)
+            f.setInteger(MediaFormat.KEY_FRAME_RATE, mode.fps)
+            f.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
+            codec = MediaCodec.createEncoderByType(mime)
+            codec.configure(f, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+            codec.start()
+            return Enc(codec, mime)
+        } catch (e: Exception) {
+            try { codec?.release() } catch (_: Exception) { }
+            throw ProcessException("Kodlayıcı $mime başlatılamadı: ${e.message}", e)
         }
-        throw ProcessException("Bu telefon ${mode.width}x${mode.height} video kodlayamadı: ${lastError?.message}", lastError)
     }
 
     private fun bytesOf(b: ByteBuffer): ByteArray {
@@ -165,7 +176,7 @@ object VideoTranscoder {
     // ------------------------------------------------------------------ görüntü
     private fun encodeVideo(
         context: Context, src: Uri, vIdx: Int, device: Device, mode: VideoMode, look: Look, out: File,
-        muxType: Int, durationUs: Long, log: (String) -> Unit, progress: (Float) -> Unit
+        muxType: Int, durationUs: Long, encMime: String, log: (String) -> Unit, progress: (Float) -> Unit
     ): String {
         val ex = openExtractor(context, src)
         var dec: MediaCodec? = null
@@ -181,7 +192,7 @@ object VideoTranscoder {
             dec = decoder
             decoder.configure(inFmt, null, null, 0)
             decoder.start()
-            val encoder = createVideoEncoder(mode, log)
+            val encoder = createVideoEncoder(mode, encMime)
             enc = encoder
             val codec = encoder.codec
             val mx = MediaMuxer(out.path, muxType)

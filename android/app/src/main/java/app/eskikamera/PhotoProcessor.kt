@@ -34,8 +34,8 @@ object PhotoProcessor {
         }
 
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        resolver.openInputStream(src)?.use { BitmapFactory.decodeStream(it, null, bounds) }
-            ?: throw ProcessException("Fotoğraf açılamadı")
+        val boundsStream = resolver.openInputStream(src) ?: throw ProcessException("Fotoğraf açılamadı")
+        boundsStream.use { BitmapFactory.decodeStream(it, null, bounds) }
         if (bounds.outWidth <= 0 || bounds.outHeight <= 0) throw ProcessException("Fotoğraf boyutu okunamadı")
 
         val rotW = if (rotation == 90 || rotation == 270) bounds.outHeight else bounds.outWidth
