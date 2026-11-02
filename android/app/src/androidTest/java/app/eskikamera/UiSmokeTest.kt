@@ -39,14 +39,16 @@ class UiSmokeTest {
             assumeTrue("Emülatör kamerası açılamadı:\n" + logText(), ready)
 
             sc.onActivity { it.takePhoto() }
-            assertTrue("foto bitmedi\n" + logText(), waitFor(90_000) { logHas("Tamam: Pictures") || logHas("Hata oldu") || logHas("Fotoğraf çekilemedi") })
+            val photoDone = waitFor(90_000) { logHas("Tamam: Pictures") || logHas("Hata oldu") || logHas("Fotoğraf çekilemedi") }
+            assertTrue("foto bitmedi\n" + logText(), photoDone)
             assertFalse("foto hatası\n" + logText(), logHas("Hata oldu") || logHas("Fotoğraf çekilemedi"))
 
             if (!logHas("yalnızca foto")) {
                 sc.onActivity { it.toggleVideo() }
                 Thread.sleep(4000)
                 sc.onActivity { it.toggleVideo() }
-                assertTrue("video bitmedi\n" + logText(), waitFor(180_000) { logHas("Tamam: Movies") || logHas("Hata oldu") || logHas("Video kaydı hatası") })
+                val videoDone = waitFor(180_000) { logHas("Tamam: Movies") || logHas("Hata oldu") || logHas("Video kaydı hatası") }
+                assertTrue("video bitmedi\n" + logText(), videoDone)
                 assertFalse("video hatası\n" + logText(), logHas("Hata oldu") || logHas("Video kaydı hatası"))
             }
         }
