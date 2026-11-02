@@ -16,6 +16,7 @@ object ErrorLog {
 
     @Synchronized
     fun add(msg: String) {
+        android.util.Log.i("EskiKamera", msg)
         lines.add("${fmt.format(Date())} $msg")
         while (lines.size > 120) lines.removeAt(0)
     }

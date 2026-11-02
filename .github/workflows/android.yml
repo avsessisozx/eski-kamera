@@ -64,7 +64,7 @@ jobs:
           target: google_apis
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back virtualscene
-          script: gradle -p android connectedDebugAndroidTest --stacktrace
+          script: gradle -p android connectedDebugAndroidTest --stacktrace || echo FAIL > /tmp/emu_fail; adb logcat -d | grep -E 'EskiKamera|AndroidRuntime|FATAL|CameraX|ImageCapture|StrictMode' | tail -150; test ! -f /tmp/emu_fail
       - uses: actions/upload-artifact@v4
         if: always()
         with:
