@@ -21,7 +21,8 @@
       "jpeg_quality": 85,
       "hot_pixels": 0,
       "levels": 0,
-      "palette": 0
+      "palette": 0,
+      "border": 0.0
     },
     "video_look": {
       "blur": 0.6,
@@ -37,7 +38,10 @@
       ],
       "vignette": 0.0,
       "chroma_bleed": 0,
-      "prescale": null
+      "prescale": null,
+      "levels": 0,
+      "palette": 0,
+      "border": 0.0
     }
   },
   "devices": [
@@ -102,7 +106,8 @@
           ]
         }
       },
-      "note": "2000'lerin başındaki ilk kameralı telefonların seviyesi"
+      "note": "2000'lerin başındaki ilk kameralı telefonların seviyesi",
+      "icon": "candybar"
     },
     {
       "id": "genel_vga_telefon",
@@ -180,7 +185,8 @@
           ]
         }
       },
-      "note": "Tuşlu telefon çağının 0.3 MP VGA kamerası"
+      "note": "Tuşlu telefon çağının 0.3 MP VGA kamerası",
+      "icon": "candybar"
     },
     {
       "id": "nokia_6230",
@@ -257,7 +263,8 @@
           ]
         }
       },
-      "note": "2004'ün popüler Nokia'sı, VGA kamera"
+      "note": "2004'ün popüler Nokia'sı, VGA kamera",
+      "icon": "candybar"
     },
     {
       "id": "nokia_6280",
@@ -346,7 +353,8 @@
             0.95
           ]
         }
-      }
+      },
+      "icon": "candybar"
     },
     {
       "id": "nokia_n95",
@@ -430,7 +438,8 @@
           "vignette": 0.1
         }
       },
-      "note": "2007'nin 5 MP amiral gemisi, VGA 30 fps video"
+      "note": "2007'nin 5 MP amiral gemisi, VGA 30 fps video",
+      "icon": "slider"
     },
     {
       "id": "nokia_n93i",
@@ -497,7 +506,8 @@
           "contrast": 1.03,
           "saturation": 1.04
         }
-      }
+      },
+      "icon": "slider"
     },
     {
       "id": "se_k550",
@@ -572,7 +582,8 @@
             0.97
           ]
         }
-      }
+      },
+      "icon": "candybar"
     },
     {
       "id": "se_k850i",
@@ -644,7 +655,8 @@
             0.97
           ]
         }
-      }
+      },
+      "icon": "candybar"
     },
     {
       "id": "olympus_e20",
@@ -673,7 +685,8 @@
           "vignette": 0.12
         }
       },
-      "video": null
+      "video": null,
+      "icon": "compact"
     },
     {
       "id": "sony_dsc_p100",
@@ -735,7 +748,8 @@
             1.03
           ]
         }
-      }
+      },
+      "icon": "compact"
     },
     {
       "id": "canon_ixus_2005",
@@ -811,7 +825,8 @@
             0.96
           ]
         }
-      }
+      },
+      "icon": "compact"
     },
     {
       "id": "kodak_m420",
@@ -866,7 +881,8 @@
           "saturation": 1.15,
           "gamma": 0.96
         }
-      }
+      },
+      "icon": "compact"
     },
     {
       "id": "vhs_kamkorder",
@@ -936,7 +952,8 @@
           ]
         }
       },
-      "note": "80'ler ve 90'ların ev videoları"
+      "note": "80'ler ve 90'ların ev videoları",
+      "icon": "camcorder"
     },
     {
       "id": "hi8_kamkorder",
@@ -1005,7 +1022,8 @@
           ]
         }
       },
-      "note": "90'ların Hi8 kamkorderleri"
+      "note": "90'ların Hi8 kamkorderleri",
+      "icon": "camcorder"
     },
     {
       "id": "minidv_kamkorder",
@@ -1061,7 +1079,8 @@
           "vignette": 0.1
         }
       },
-      "note": "2000'lerin MiniDV kamkorderleri"
+      "note": "2000'lerin MiniDV kamkorderleri",
+      "icon": "camcorder"
     },
     {
       "id": "casio_qv10",
@@ -1093,7 +1112,8 @@
           "bayer": true
         }
       },
-      "video": null
+      "video": null,
+      "icon": "compact"
     },
     {
       "id": "nintendo_gb_camera",
@@ -1127,7 +1147,8 @@
           "palette": 1
         }
       },
-      "video": null
+      "video": null,
+      "icon": "handheld"
     },
     {
       "id": "sony_mavica_fd",
@@ -1158,7 +1179,8 @@
           "vignette": 0.1
         }
       },
-      "video": null
+      "video": null,
+      "icon": "compact"
     },
     {
       "id": "sharp_jsh04",
@@ -1191,7 +1213,8 @@
           "hot_pixels": 6
         }
       },
-      "video": null
+      "video": null,
+      "icon": "candybar"
     },
     {
       "id": "nokia_7650",
@@ -1224,7 +1247,8 @@
           "hot_pixels": 5
         }
       },
-      "video": null
+      "video": null,
+      "icon": "slider"
     },
     {
       "id": "motorola_razr_v3",
@@ -1286,7 +1310,8 @@
             0.95
           ]
         }
-      }
+      },
+      "icon": "flip"
     },
     {
       "id": "flip_ultra",
@@ -1344,7 +1369,8 @@
             0.98
           ]
         }
-      }
+      },
+      "icon": "pocketcam"
     },
     {
       "id": "iphone_3gs",
@@ -1404,6 +1430,568 @@
             1.0,
             0.98
           ]
+        }
+      },
+      "icon": "smartphone"
+    },
+    {
+      "id": "pxl2000",
+      "name": "Fisher-Price PXL-2000 (1987)",
+      "category": "kamkorder",
+      "year": 1987,
+      "icon": "camcorder",
+      "note": "Ses kasetine kayıt yapan oyuncak kamkorder (Pixelvision)",
+      "spec_source": "kaynaklı: 120x90, siyah-beyaz, 15 kare/sn, ses kaseti (Wikipedia, Science Museum, Ceros)",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 120,
+        "height": 90,
+        "scale": 4,
+        "format": "png",
+        "look": {
+          "blur": 0.7,
+          "sharpen": 0.0,
+          "noise_luma": 14,
+          "noise_chroma": 0,
+          "contrast": 1.3,
+          "saturation": 0.0,
+          "gamma": 1.0,
+          "cast": [
+            1,
+            1,
+            1
+          ],
+          "vignette": 0.25,
+          "border": 0.07,
+          "levels": 0,
+          "jpeg_quality": 95
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "120x90 15fps (siyah-beyaz)",
+            "width": 480,
+            "height": 360,
+            "native": [
+              120,
+              90
+            ],
+            "fps": 15,
+            "codec": "h264",
+            "container": "mp4",
+            "video_kbps": 700,
+            "audio": {
+              "rate": 11025,
+              "channels": 1,
+              "kbps": 32
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.7,
+          "sharpen": 0.0,
+          "noise": 16,
+          "contrast": 1.3,
+          "saturation": 0.0,
+          "gamma": 1.0,
+          "cast": [
+            1,
+            1,
+            1
+          ],
+          "vignette": 0.25,
+          "border": 0.07
+        }
+      }
+    },
+    {
+      "id": "connectix_quickcam",
+      "name": "Connectix QuickCam (1994)",
+      "category": "webcam",
+      "year": 1994,
+      "icon": "webcam",
+      "note": "İlk webcam: 16 gri ton",
+      "spec_source": "kaynaklı: 320x240, 16 gri ton, ~15 kare/sn (Wikipedia, Hackernoon)",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 320,
+        "height": 240,
+        "format": "png",
+        "look": {
+          "blur": 0.9,
+          "sharpen": 0.1,
+          "noise_luma": 8,
+          "noise_chroma": 0,
+          "contrast": 1.1,
+          "saturation": 0.0,
+          "gamma": 1.0,
+          "cast": [
+            1,
+            1,
+            1
+          ],
+          "vignette": 0.1,
+          "levels": 16,
+          "palette": 0,
+          "jpeg_quality": 95
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "320x240 15fps (16 gri ton)",
+            "width": 320,
+            "height": 240,
+            "fps": 15,
+            "codec": "h264",
+            "container": "mp4",
+            "video_kbps": 400,
+            "audio": {
+              "rate": 8000,
+              "channels": 1,
+              "kbps": 16
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.9,
+          "sharpen": 0.1,
+          "noise": 9,
+          "contrast": 1.1,
+          "saturation": 0.0,
+          "gamma": 1.0,
+          "cast": [
+            1,
+            1,
+            1
+          ],
+          "vignette": 0.1,
+          "levels": 16,
+          "palette": 0
+        }
+      }
+    },
+    {
+      "id": "apple_quicktake_100",
+      "name": "Apple QuickTake 100 (1994)",
+      "category": "dijital kamera",
+      "year": 1994,
+      "icon": "compact",
+      "note": "Apple'ın ilk tüketici dijital kamerası",
+      "spec_source": "kaynaklı: 0.31 MP Kodak CCD, 640x480, 1 MB hafıza (Digital Kamera Museum, Wikipedia); video yok",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 640,
+        "height": 480,
+        "format": "jpg",
+        "look": {
+          "blur": 1.1,
+          "sharpen": 0.05,
+          "noise_luma": 6,
+          "noise_chroma": 4,
+          "contrast": 0.95,
+          "saturation": 0.85,
+          "gamma": 1.08,
+          "cast": [
+            1.02,
+            1.0,
+            0.94
+          ],
+          "vignette": 0.15,
+          "jpeg_quality": 50,
+          "bayer": true
+        }
+      },
+      "video": null
+    },
+    {
+      "id": "nintendo_dsi",
+      "name": "Nintendo DSi kamerası (2009)",
+      "category": "oyun konsolu",
+      "year": 2009,
+      "icon": "handheld",
+      "note": "DSi'nin 0.3 MP kamerası (sadece foto)",
+      "spec_source": "kaynaklı: 0.3 MP, 640x480 CMOS (iFixit); video yok",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 640,
+        "height": 480,
+        "format": "jpg",
+        "look": {
+          "blur": 0.9,
+          "sharpen": 0.15,
+          "noise_luma": 7,
+          "noise_chroma": 5,
+          "contrast": 1.02,
+          "saturation": 1.1,
+          "gamma": 1.0,
+          "cast": [
+            1,
+            1,
+            1
+          ],
+          "vignette": 0.1,
+          "jpeg_quality": 68,
+          "bayer": true,
+          "hot_pixels": 3
+        }
+      },
+      "video": null
+    },
+    {
+      "id": "nintendo_3ds",
+      "name": "Nintendo 3DS kamerası (2011)",
+      "category": "oyun konsolu",
+      "year": 2011,
+      "icon": "handheld",
+      "note": "Her kamera 640x480. Telefonda tek kamera var, 3D çekim yapılmaz",
+      "spec_source": "kaynaklı: üç kamera, her biri 640x480 (Nintendo, Game Developer); 3D efekti yok, video yok",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 640,
+        "height": 480,
+        "format": "jpg",
+        "look": {
+          "blur": 0.85,
+          "sharpen": 0.25,
+          "noise_luma": 5.5,
+          "noise_chroma": 4,
+          "contrast": 1.05,
+          "saturation": 1.12,
+          "gamma": 1.0,
+          "cast": [
+            1,
+            1,
+            1
+          ],
+          "vignette": 0.12,
+          "jpeg_quality": 72,
+          "bayer": true,
+          "hot_pixels": 2
+        }
+      },
+      "video": null
+    },
+    {
+      "id": "ps_eye",
+      "name": "PlayStation Eye (2007)",
+      "category": "webcam",
+      "year": 2007,
+      "icon": "webcam",
+      "note": "Oyun konsolu kamerası; gerçekte 60-120 fps, telefonda en çok 30 fps",
+      "spec_source": "kaynaklı: 640x480 60 Hz ve 320x240 120 Hz (Wikipedia, Sony); telefonda kare hızı 30 ile sınırlı",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 640,
+        "height": 480,
+        "format": "jpg",
+        "look": {
+          "blur": 0.8,
+          "sharpen": 0.55,
+          "noise_luma": 4.5,
+          "noise_chroma": 3,
+          "contrast": 1.1,
+          "saturation": 1.2,
+          "gamma": 0.98,
+          "cast": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "vignette": 0.1,
+          "jpeg_quality": 78
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "640x480 30fps (MP4)",
+            "width": 640,
+            "height": 480,
+            "fps": 30,
+            "codec": "h264",
+            "container": "mp4",
+            "video_kbps": 2000,
+            "audio": {
+              "rate": 16000,
+              "channels": 1,
+              "kbps": 48
+            }
+          },
+          {
+            "label": "320x240 30fps (MP4)",
+            "width": 320,
+            "height": 240,
+            "fps": 30,
+            "codec": "h264",
+            "container": "mp4",
+            "video_kbps": 900,
+            "audio": {
+              "rate": 16000,
+              "channels": 1,
+              "kbps": 48
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.7,
+          "sharpen": 0.5,
+          "noise": 5,
+          "contrast": 1.1,
+          "saturation": 1.2,
+          "gamma": 0.98
+        }
+      }
+    },
+    {
+      "id": "vtech_kidizoom_2007",
+      "name": "VTech Kidizoom (2007)",
+      "category": "dijital kamera",
+      "year": 2007,
+      "icon": "toy",
+      "note": "Çocuk kamerası: 2 MP foto, 160x120 video",
+      "spec_source": "kaynaklı: 2 MP CCD, 1632x1224 foto, 160x120 MJPEG video (Ingenium); video H.264 MP4 olarak kaydedilir",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 1632,
+        "height": 1224,
+        "format": "jpg",
+        "look": {
+          "blur": 1.3,
+          "sharpen": 0.3,
+          "noise_luma": 6,
+          "noise_chroma": 4,
+          "contrast": 1.05,
+          "saturation": 1.25,
+          "gamma": 1.0,
+          "cast": [
+            1.02,
+            1.0,
+            0.96
+          ],
+          "vignette": 0.15,
+          "jpeg_quality": 72,
+          "bloom": 0.1
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "160x120 15fps (MP4)",
+            "width": 160,
+            "height": 120,
+            "fps": 15,
+            "codec": "h264",
+            "container": "mp4",
+            "video_kbps": 150,
+            "audio": {
+              "rate": 8000,
+              "channels": 1,
+              "kbps": 16
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.8,
+          "sharpen": 0.1,
+          "noise": 6,
+          "contrast": 1.05,
+          "saturation": 1.25,
+          "cast": [
+            1.02,
+            1.0,
+            0.96
+          ]
+        }
+      }
+    },
+    {
+      "id": "vtech_kidizoom_action",
+      "name": "VTech Kidizoom Action Cam (2015)",
+      "category": "dijital kamera",
+      "year": 2015,
+      "icon": "toy",
+      "note": "Çocuk aksiyon kamerası: 0.3 MP",
+      "spec_source": "kaynaklı: foto 640x480; video 160x120, 320x240, 640x480, AVI (iFixit); AVI yerine MP4 kaydedilir, kare hızı tahmini",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 640,
+        "height": 480,
+        "format": "jpg",
+        "look": {
+          "blur": 1.0,
+          "sharpen": 0.2,
+          "noise_luma": 6.5,
+          "noise_chroma": 4.5,
+          "contrast": 1.05,
+          "saturation": 1.2,
+          "gamma": 1.0,
+          "cast": [
+            1,
+            1,
+            1
+          ],
+          "vignette": 0.15,
+          "jpeg_quality": 68,
+          "bayer": true
+        }
+      },
+      "video": {
+        "default": 2,
+        "modes": [
+          {
+            "label": "160x120 (MP4)",
+            "width": 160,
+            "height": 120,
+            "fps": 20,
+            "codec": "h264",
+            "container": "mp4",
+            "video_kbps": 200,
+            "audio": {
+              "rate": 8000,
+              "channels": 1,
+              "kbps": 16
+            }
+          },
+          {
+            "label": "320x240 (MP4)",
+            "width": 320,
+            "height": 240,
+            "fps": 25,
+            "codec": "h264",
+            "container": "mp4",
+            "video_kbps": 600,
+            "audio": {
+              "rate": 11025,
+              "channels": 1,
+              "kbps": 24
+            }
+          },
+          {
+            "label": "640x480 (MP4)",
+            "width": 640,
+            "height": 480,
+            "fps": 30,
+            "codec": "h264",
+            "container": "mp4",
+            "video_kbps": 1500,
+            "audio": {
+              "rate": 16000,
+              "channels": 1,
+              "kbps": 32
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.8,
+          "sharpen": 0.15,
+          "noise": 6,
+          "contrast": 1.05,
+          "saturation": 1.2
+        }
+      }
+    },
+    {
+      "id": "lespion_keychain",
+      "name": "l'Espion anahtarlık kamerası (2001)",
+      "category": "dijital kamera",
+      "year": 2001,
+      "icon": "keychain",
+      "note": "Anahtarlığa takılan küçük dijital kamera",
+      "spec_source": "kaynaklı: 352x288 (0.1 MP) CMOS, sabit odak (Imaging Resource); video yok",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 352,
+        "height": 288,
+        "format": "jpg",
+        "look": {
+          "blur": 1.4,
+          "sharpen": 0.0,
+          "noise_luma": 9,
+          "noise_chroma": 7,
+          "contrast": 0.9,
+          "saturation": 0.8,
+          "gamma": 1.12,
+          "cast": [
+            1.03,
+            1.0,
+            0.93
+          ],
+          "vignette": 0.3,
+          "jpeg_quality": 50,
+          "bayer": true,
+          "banding": 0.2,
+          "hot_pixels": 6
+        }
+      },
+      "video": null
+    },
+    {
+      "id": "flir_one",
+      "name": "FLIR One termal (efekt)",
+      "category": "termal",
+      "year": 2014,
+      "icon": "thermal",
+      "note": "Termal GÖRÜNÜM EFEKTİ: gerçek ısı ölçmez. 80x60 çözünürlük, renkli ısı paleti",
+      "spec_source": "kaynaklı: termal 80x60, 8.7 Hz, görünür kamera 640x480 (FLIR, Infrared100); renkler parlaklıktan türetilir",
+      "look_source": "efekt",
+      "photo": {
+        "width": 80,
+        "height": 60,
+        "scale": 8,
+        "format": "png",
+        "look": {
+          "blur": 0.6,
+          "sharpen": 0.0,
+          "noise_luma": 3,
+          "noise_chroma": 0,
+          "contrast": 1.25,
+          "saturation": 1.0,
+          "gamma": 1.0,
+          "cast": [
+            1,
+            1,
+            1
+          ],
+          "vignette": 0.0,
+          "palette": 2,
+          "jpeg_quality": 95
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "80x60 9fps (termal efekt)",
+            "width": 640,
+            "height": 480,
+            "native": [
+              80,
+              60
+            ],
+            "fps": 9,
+            "codec": "h264",
+            "container": "mp4",
+            "video_kbps": 900,
+            "audio": {
+              "rate": 16000,
+              "channels": 1,
+              "kbps": 32
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.6,
+          "sharpen": 0.0,
+          "noise": 3,
+          "contrast": 1.25,
+          "saturation": 1.0,
+          "palette": 2
         }
       }
     }

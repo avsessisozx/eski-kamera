@@ -80,6 +80,30 @@ object FrameSampler {
         return if (prescale != null) resizeBilinear(out, sw, sh, outW, outH) else out
     }
 
+    /** Piksel piksel (en yakın komşu) büyütme. */
+    fun upscaleNearest(src: IntArray, sw: Int, sh: Int, dw: Int, dh: Int): IntArray {
+        if (sw == dw && sh == dh) return src
+        val out = IntArray(dw * dh)
+        for (y in 0 until dh) {
+            val sy = min(sh - 1, y * sh / dh)
+            for (x in 0 until dw) out[y * dw + x] = src[sy * sw + min(sw - 1, x * sw / dw)]
+        }
+        return out
+    }
+
+    /** Karenin parlaklık (Y) düzleminden küçük bir gri ölçekli kopya (hareket algılama için). */
+    fun lumaThumb(f: YuvFrame, tw: Int, th: Int): ByteArray {
+        val out = ByteArray(tw * th)
+        for (y in 0 until th) {
+            val sy = min(f.height - 1, y * f.height / th) + f.cropTop
+            for (x in 0 until tw) {
+                val sx = min(f.width - 1, x * f.width / tw) + f.cropLeft
+                out[y * tw + x] = f.y[sy * f.yRowStride + sx]
+            }
+        }
+        return out
+    }
+
     fun resizeBilinear(src: IntArray, sw: Int, sh: Int, dw: Int, dh: Int): IntArray {
         val out = IntArray(dw * dh)
         for (y in 0 until dh) {

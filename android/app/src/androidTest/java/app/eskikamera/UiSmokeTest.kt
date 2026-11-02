@@ -34,7 +34,7 @@ class UiSmokeTest {
         ActivityScenario.launch(MainActivity::class.java).use { sc ->
             var count = 0
             sc.onActivity { count = it.deviceCountForTest() }
-            assertEquals("cihaz sayısı\n" + logText(), 23, count)
+            assertEquals("cihaz sayısı\n" + logText(), 33, count)
             val ready = waitFor(30_000) { logHas("Kamera hazır") }
             assumeTrue("Emülatör kamerası açılamadı:\n" + logText(), ready)
 
@@ -50,6 +50,29 @@ class UiSmokeTest {
             val videoDone = waitFor(60_000) { logHas("Tamam: Movies") || logHas("Hata oldu") }
             assertTrue("video bitmedi\n" + logText(), videoDone)
             assertFalse("video hatası\n" + logText(), logHas("Hata oldu"))
+        }
+    }
+
+    @Test
+    fun extraModesAndViewer() {
+        ActivityScenario.launch(MainActivity::class.java).use { sc ->
+            val ready = waitFor(30_000) { logHas("Kamera hazır") }
+            assumeTrue("Emülatör kamerası açılamadı:\n" + logText(), ready)
+
+            // yerel çözünürlüklü cihaz (PXL-2000): 120x90 işlenip 480x360'a büyütülür
+            sc.onActivity { it.selectDeviceForTest("pxl2000"); it.selectCapForTest("TIMELAPSE") }
+            sc.onActivity { it.shutterForTest() }
+            Thread.sleep(5000)
+            assertFalse("zaman atlamalı başlamadı\n" + logText(), logHas("Kayıt başlatılamadı"))
+            sc.onActivity { it.shutterForTest() }
+            val done = waitFor(60_000) { logHas("Tamam: Movies") || logHas("Hata oldu") }
+            assertTrue("zaman atlamalı bitmedi\n" + logText(), done)
+            assertFalse("zaman atlamalı hatası\n" + logText(), logHas("Hata oldu"))
+
+            // görüntüleyici açılır
+            ActivityScenario.launch(ViewerActivity::class.java).use {
+                assertTrue("görüntüleyici açılmadı\n" + logText(), waitFor(15_000) { logHas("Görüntüleyici:") })
+            }
         }
     }
 }

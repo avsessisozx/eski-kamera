@@ -18,7 +18,8 @@ data class Look(
     val chromaBleed: Int,
     val jpegQuality: Int,
     val levels: Int = 0,
-    val palette: Int = 0
+    val palette: Int = 0,
+    val border: Float = 0f
 )
 
 class AudioSpec(val rate: Int, val channels: Int, val kbps: Int, val pcm: Boolean)
@@ -31,8 +32,14 @@ class VideoMode(
     val codec: String,
     val container: String,
     val videoKbps: Int,
-    val audio: AudioSpec
-)
+    val audio: AudioSpec,
+    val nativeW: Int = 0,
+    val nativeH: Int = 0
+) {
+    /** İşleme çözünürlüğü (çıktı bunun tam sayı katıysa piksel piksel büyütülür). */
+    val procW: Int get() = if (nativeW > 0) nativeW else width
+    val procH: Int get() = if (nativeH > 0) nativeH else height
+}
 
 class Device(
     val id: String,
@@ -50,7 +57,8 @@ class Device(
     val videoPrescale: IntArray?,
     val note: String = "",
     val photoScale: Int = 1,
-    val photoFormat: String = "jpg"
+    val photoFormat: String = "jpg",
+    val icon: String = "compact"
 ) {
     val hasVideo: Boolean get() = modes.isNotEmpty()
 
@@ -102,7 +110,8 @@ object Profiles {
         cast = castOf(m), vignette = m.f("vignette"), bloom = m.f("bloom"),
         bayer = m["bayer"] as Boolean, hotPixels = m.i("hot_pixels"), chromaBleed = 0,
         jpegQuality = m.i("jpeg_quality"),
-        levels = (m["levels"] as Number?)?.toInt() ?: 0, palette = (m["palette"] as Number?)?.toInt() ?: 0
+        levels = (m["levels"] as Number?)?.toInt() ?: 0, palette = (m["palette"] as Number?)?.toInt() ?: 0,
+        border = (m["border"] as Number?)?.toFloat() ?: 0f
     )
 
     private fun videoLook(m: Map<String, Any?>): Look {
@@ -112,7 +121,9 @@ object Profiles {
             noiseLuma = noise * 0.58f, noiseChroma = noise * 0.3f, banding = 0f,
             contrast = m.f("contrast"), saturation = m.f("saturation"), gamma = m.f("gamma"),
             cast = castOf(m), vignette = m.f("vignette"), bloom = 0f,
-            bayer = false, hotPixels = 0, chromaBleed = m.i("chroma_bleed"), jpegQuality = 0
+            bayer = false, hotPixels = 0, chromaBleed = m.i("chroma_bleed"), jpegQuality = 0,
+            levels = (m["levels"] as Number?)?.toInt() ?: 0, palette = (m["palette"] as Number?)?.toInt() ?: 0,
+            border = (m["border"] as Number?)?.toFloat() ?: 0f
         )
     }
 
@@ -131,7 +142,9 @@ object Profiles {
                 VideoMode(
                     label = m.s("label"), width = m.i("width"), height = m.i("height"), fps = m.i("fps"),
                     codec = m.s("codec"), container = m.s("container"), videoKbps = m.i("video_kbps"),
-                    audio = AudioSpec(a.i("rate"), a.i("channels"), a.i("kbps"), (a["pcm"] as Boolean?) ?: false)
+                    audio = AudioSpec(a.i("rate"), a.i("channels"), a.i("kbps"), (a["pcm"] as Boolean?) ?: false),
+                    nativeW = ((m["native"] as List<Any?>?)?.get(0) as Number?)?.toInt() ?: 0,
+                    nativeH = ((m["native"] as List<Any?>?)?.get(1) as Number?)?.toInt() ?: 0
                 )
             }
             defaultMode = video.i("default")
@@ -147,7 +160,8 @@ object Profiles {
             modes = modes, defaultMode = defaultMode, videoLook = vLook, videoPrescale = prescale,
             note = (d["note"] as String?) ?: "",
             photoScale = (photo["scale"] as Number?)?.toInt() ?: 1,
-            photoFormat = (photo["format"] as String?) ?: "jpg"
+            photoFormat = (photo["format"] as String?) ?: "jpg",
+            icon = (d["icon"] as String?) ?: "compact"
         )
     }
 }

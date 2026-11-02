@@ -11,8 +11,8 @@ android {
         applicationId = "app.eskikamera"
         minSdk = 29
         targetSdk = 34
-        versionCode = 3
-        versionName = "0.2.0"
+        versionCode = 4
+        versionName = "0.3.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -54,10 +54,10 @@ android {
 
     sourceSets {
         getByName("main") {
-            assets.srcDirs("../../profiles")
+            assets.srcDirs("src/main/assets", "../../profiles")
         }
         getByName("androidTest") {
-            assets.srcDirs("src/androidTest/assets", "../../profiles")
+            assets.srcDirs("src/androidTest/assets", "src/main/assets", "../../profiles")
         }
     }
 }

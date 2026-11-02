@@ -14,7 +14,7 @@ class CoreTest {
     @Test
     fun profilesParse() {
         val d = devices()
-        assertEquals(23, d.size)
+        assertEquals(33, d.size)
         val n = d.first { it.id == "nokia_6230" }
         assertEquals(640, n.photoWidth)
         assertEquals(2, n.modes.size)
@@ -105,5 +105,48 @@ class CoreTest {
         assertTrue(abs(((back[0] shr 16) and 255) - 0xC0) < 4)
         val rot = FrameSampler.toRgb(YuvFrame(32, 16, 0, 0, ByteArray(512), 32, ByteArray(128), ByteArray(128), 16, 1), 90, 16, 12, intArrayOf(32, 24))
         assertEquals(16 * 12, rot.size)
+    }
+
+    @Test
+    fun newDevicesAndNativeModes() {
+        val d = devices()
+        val pxl = d.first { it.id == "pxl2000" }
+        assertEquals(480, pxl.modes[0].width)
+        assertEquals(120, pxl.modes[0].procW)
+        val flir = d.first { it.id == "flir_one" }
+        assertEquals(80, flir.modes[0].procW)
+        assertEquals(2, flir.videoLook!!.palette)
+        assertTrue(d.first { it.id == "ps_eye" }.modes.all { it.fps <= 30 })
+    }
+
+    @Test
+    fun thermalPaletteProducesColor() {
+        val flir = devices().first { it.id == "flir_one" }
+        val w = 80
+        val h = 60
+        val src = IntArray(w * h) { i -> val v = (i % w) * 255 / w; 0xFF000000.toInt() or (v shl 16) or (v shl 8) or v }
+        val out = LookProcessor.processFrame(src, w, h, flir.videoLook!!, 2L, threads = 1)
+        var colored = 0
+        for (p in out) { val r = (p shr 16) and 255; val b = p and 255; if (abs(r - b) > 40) colored++ }
+        assertTrue("termal palet renkli olmalı", colored > out.size / 4)
+    }
+
+    @Test
+    fun motionTriggerStartsAndStops() {
+        val t = MotionTrigger(quietMs = 2000L, cooldownMs = 0L)
+        assertEquals(MotionTrigger.Event.NONE, t.feed(10f, 6f, 0L))
+        assertEquals(MotionTrigger.Event.START, t.feed(10f, 6f, 100L))
+        assertEquals(MotionTrigger.Event.NONE, t.feed(0f, 6f, 1000L))
+        assertEquals(MotionTrigger.Event.STOP, t.feed(0f, 6f, 2500L))
+    }
+
+    @Test
+    fun motionDetectorScoresChange() {
+        val m = MotionDetector()
+        val a = ByteArray(64 * 48) { 10 }
+        val b = ByteArray(64 * 48) { 100 }
+        assertEquals(0f, m.update(a), 0.001f)
+        assertEquals(0f, m.update(a), 0.001f)
+        assertTrue(m.update(b) > 50f)
     }
 }

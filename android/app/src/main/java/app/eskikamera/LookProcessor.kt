@@ -17,6 +17,26 @@ object LookProcessor {
     private val BAYER4 = intArrayOf(0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5)
     private val GB_PALETTE = intArrayOf(0xFF0F380F.toInt(), 0xFF306230.toInt(), 0xFF8BAC0F.toInt(), 0xFF9BBC0F.toInt())
 
+    /** Termal ("ironbow") renk paleti, 256 girişli. */
+    val IRON: IntArray = run {
+        val pts = arrayOf(
+            floatArrayOf(0.0f, 0f, 0f, 0f), floatArrayOf(0.2f, 50f, 0f, 110f), floatArrayOf(0.4f, 160f, 20f, 100f),
+            floatArrayOf(0.6f, 240f, 90f, 20f), floatArrayOf(0.8f, 255f, 200f, 40f), floatArrayOf(1.0f, 255f, 255f, 230f)
+        )
+        IntArray(256) { i ->
+            val t = i / 255f
+            var k = 0
+            while (k < pts.size - 2 && t > pts[k + 1][0]) k++
+            val a = pts[k]
+            val b = pts[k + 1]
+            val f = ((t - a[0]) / (b[0] - a[0])).coerceIn(0f, 1f)
+            val r = (a[1] + (b[1] - a[1]) * f).toInt()
+            val g = (a[2] + (b[2] - a[2]) * f).toInt()
+            val bl = (a[3] + (b[3] - a[3]) * f).toInt()
+            (0xFF shl 24) or (r shl 16) or (g shl 8) or bl
+        }
+    }
+
     private val pool by lazy {
         Executors.newFixedThreadPool(max(2, min(4, Runtime.getRuntime().availableProcessors()))) { r ->
             Thread(r, "look-worker").apply { isDaemon = true }
@@ -147,6 +167,8 @@ object LookProcessor {
         val halfW = w / 2f
         val halfH = h / 2f
         val invNorm = 1f / sqrt(2f)
+        val borderX = (w * look.border).toInt()
+        val borderY = (h * look.border).toInt()
         for (y in y0 until y1) {
             val row = (y - ys) * w
             val bandNoise = if (look.banding > 0f) rng.gauss() * look.banding * 3f / 255f else 0f
@@ -171,11 +193,15 @@ object LookProcessor {
                     rr += c0 - mean; gg += c1 - mean; bb += c2 - mean
                 }
                 rr += bandNoise; gg += bandNoise; bb += bandNoise
-                if (look.levels > 0) {
+                var px: Int
+                if (look.palette == 2) {
+                    val l = clamp01(0.299f * rr + 0.587f * gg + 0.114f * bb)
+                    px = IRON[(l * 255f + 0.5f).toInt().coerceIn(0, 255)]
+                } else if (look.levels > 0) {
                     val l = clamp01(0.299f * rr + 0.587f * gg + 0.114f * bb)
                     val thr = (BAYER4[(y and 3) * 4 + (x and 3)] + 0.5f) / 16f - 0.5f
-                    val q = ((l * (look.levels - 1)) + 0.5f + thr * 0.8f).toInt().coerceIn(0, look.levels - 1)
-                    out[y * w + x] = if (look.palette == 1 && look.levels == 4) GB_PALETTE[q] else {
+                    val q = ((l * (look.levels - 1)) + 0.5f + thr * (if (look.levels <= 4) 0.8f else 0f)).toInt().coerceIn(0, look.levels - 1)
+                    px = if (look.palette == 1 && look.levels == 4) GB_PALETTE[q] else {
                         val gv = (q * 255f / (look.levels - 1) + 0.5f).toInt()
                         (0xFF shl 24) or (gv shl 16) or (gv shl 8) or gv
                     }
@@ -183,8 +209,12 @@ object LookProcessor {
                     val ir = (clamp01(rr) * 255f + 0.5f).toInt()
                     val ig = (clamp01(gg) * 255f + 0.5f).toInt()
                     val ib = (clamp01(bb) * 255f + 0.5f).toInt()
-                    out[y * w + x] = (0xFF shl 24) or (ir shl 16) or (ig shl 8) or ib
+                    px = (0xFF shl 24) or (ir shl 16) or (ig shl 8) or ib
                 }
+                if (borderX > 0 || borderY > 0) {
+                    if (x < borderX || x >= w - borderX || y < borderY || y >= h - borderY) px = 0xFF000000.toInt()
+                }
+                out[y * w + x] = px
             }
         }
     }

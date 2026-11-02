@@ -132,6 +132,17 @@ private class Pump(val codec: MediaCodec, val coord: Coordinator, val label: Str
     }
 }
 
+/** Canlı kayıt seçenekleri: ekran bilgisi, zaman atlamalı, yavaş çekim. */
+class LiveOptions(
+    val overlay: OverlayConfig = OverlayConfig(),
+    /** Kaydın başından beri geçen saniyeyi alıp ekran bilgisi verisi üretir. */
+    val dataSource: ((Long) -> OverlayData)? = null,
+    /** > 0 ise zaman atlamalı: iki kare arası gerçek süre (ms). Çıktı normal kare hızıyla oynar. */
+    val timelapseMs: Long = 0,
+    /** > 1 ise yavaş çekim: oynatma süresi bu kat uzar (gerçek yüksek kare hızı değildir). */
+    val slowFactor: Int = 1
+)
+
 /**
  * Kayıt sırasında kareleri işleyip hemen kodlar; ses de canlı işlenir.
  * Durdurunca dosya (neredeyse) hazırdır.
@@ -145,6 +156,7 @@ class LiveRecorder(
     private val outDir: File,
     private val baseName: String,
     private val withAudio: Boolean,
+    private val opts: LiveOptions = LiveOptions(),
     private val log: (String) -> Unit
 ) {
     private val w = mode.width
@@ -156,6 +168,9 @@ class LiveRecorder(
     private var audioThread: Thread? = null
     @Volatile private var audioRunning = false
     @Volatile private var audioError: Throwable? = null
+    @Volatile var micLevel = 0f
+        private set
+    private var lastKeepNano = 0L
     private var startNano = 0L
     private var nextKeep = 0L
     private var lastRel = 0L
@@ -235,16 +250,28 @@ class LiveRecorder(
         if (stopped) return null
         val vp = videoPump ?: return null
         val rel = (nowNano - startNano) / 1000
-        if (rel + tol < nextKeep) return null
-        val rgb = FrameSampler.toRgb(frame, 0, w, h, prescale)
-        val proc = LookProcessor.processFrame(rgb, w, h, look, seedBase + framesIn)
+        val timelapse = opts.timelapseMs > 0
+        if (timelapse) {
+            if (framesIn > 0 && (nowNano - lastKeepNano) < opts.timelapseMs * 1_000_000L) return null
+        } else if (rel + tol < nextKeep) return null
+        val proc = FramePipeline.process(frame, mode, look, prescale, seedBase + framesIn)
+        if (opts.overlay.any) {
+            val data = opts.dataSource?.invoke(rel / 1_000_000L) ?: OverlayData(recording = true, recSeconds = rel / 1_000_000L)
+            Overlay.drawOn(proc, w, h, opts.overlay, data)
+        }
         val yuv = FrameSampler.rgbToYuv420(proc, w, h)
         val ei = vp.inputIndex()
         val img = vp.codec.getInputImage(ei) ?: throw ProcessException("Kodlayıcı giriş görüntüsü alınamadı")
         VideoTranscoder.fillImage(img, yuv, w, h)
-        vp.codec.queueInputBuffer(ei, 0, w * h * 3 / 2, rel, 0)
+        val pts = when {
+            timelapse -> framesIn.toLong() * frameUs
+            opts.slowFactor > 1 -> rel * opts.slowFactor
+            else -> rel
+        }
+        vp.codec.queueInputBuffer(ei, 0, w * h * 3 / 2, pts, 0)
         framesIn++
-        lastRel = rel
+        lastRel = pts
+        lastKeepNano = nowNano
         nextKeep += frameUs
         if (nextKeep <= rel) nextKeep = rel + frameUs
         vp.drain(0)
@@ -264,6 +291,9 @@ class LiveRecorder(
             while (audioRunning) {
                 val n = ar.read(buf, 0, buf.size)
                 if (n <= 0) continue
+                var sum = 0.0
+                for (q in 0 until n) sum += buf[q].toDouble() * buf[q]
+                micLevel = (Math.sqrt(sum / n) / 9000.0).toFloat().coerceIn(0f, 1f)
                 val pcm = chain.process(buf.copyOf(n))
                 if (pcm.isEmpty()) continue
                 val bb = ByteBuffer.allocate(pcm.size * 2).order(ByteOrder.nativeOrder())

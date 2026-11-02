@@ -279,8 +279,7 @@ object VideoTranscoder {
                                 val img = decoder.getOutputImage(ob)
                                 if (img != null) {
                                     val frame = try { copyFrame(img) } finally { img.close() }
-                                    val rgb = FrameSampler.toRgb(frame, 0, mode.width, mode.height, device.videoPrescale)
-                                    val proc = LookProcessor.processFrame(rgb, mode.width, mode.height, look, seedBase + framesIn)
+                                    val proc = FramePipeline.process(frame, mode, look, device.videoPrescale, seedBase + framesIn)
                                     val yuv = FrameSampler.rgbToYuv420(proc, mode.width, mode.height)
                                     val ei = encoderInput()
                                     val inImg = codec.getInputImage(ei) ?: throw ProcessException("Kodlayıcı giriş görüntüsü alınamadı")

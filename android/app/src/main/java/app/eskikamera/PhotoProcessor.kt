@@ -16,7 +16,10 @@ class ProcessException(msg: String, cause: Throwable? = null) : Exception(msg, c
 
 object PhotoProcessor {
     /** Fotoğrafı cihazın görünümüne dönüştürüp JPEG olarak outFile'a yazar. */
-    fun process(context: Context, src: Uri, device: Device, seed: Long, outFile: File, log: (String) -> Unit): String {
+    fun process(
+        context: Context, src: Uri, device: Device, seed: Long, outFile: File,
+        overlay: OverlayConfig? = null, overlayData: OverlayData? = null, log: (String) -> Unit
+    ): String {
         val resolver = context.contentResolver
         var rotation = 0
         try {
@@ -74,6 +77,7 @@ object PhotoProcessor {
         scaled.getPixels(px, 0, tw, 0, 0, tw, th)
         val t0 = System.currentTimeMillis()
         val out = LookProcessor.processPhoto(px, tw, th, device.photoLook, seed)
+        if (overlay != null && overlay.any) Overlay.drawOn(out, tw, th, overlay, overlayData ?: OverlayData())
         scaled.setPixels(out, 0, tw, 0, 0, tw, th)
         val finalBmp = if (device.photoScale > 1) Bitmap.createScaledBitmap(scaled, tw * device.photoScale, th * device.photoScale, false) else scaled
         FileOutputStream(outFile).use {
