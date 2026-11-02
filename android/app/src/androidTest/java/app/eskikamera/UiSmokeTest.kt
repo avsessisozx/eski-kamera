@@ -34,7 +34,7 @@ class UiSmokeTest {
         ActivityScenario.launch(MainActivity::class.java).use { sc ->
             var count = 0
             sc.onActivity { count = it.deviceCountForTest() }
-            assertEquals("cihaz sayısı\n" + logText(), 15, count)
+            assertEquals("cihaz sayısı\n" + logText(), 23, count)
             val ready = waitFor(30_000) { logHas("Kamera hazır") }
             assumeTrue("Emülatör kamerası açılamadı:\n" + logText(), ready)
 
