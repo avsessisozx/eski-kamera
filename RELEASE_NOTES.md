@@ -1,8 +1,8 @@
-Eski Kamera 0.1.0 (ilk sürüm)
+Eski Kamera 0.1.1
 
-- Listeden bir eski cihaz seç (tuşlu telefonlar, eski dijital kameralar, kamkorderler), fotoğraf ve videoyu o cihazda çekilmiş gibi kaydet.
-- Video ve ses de cihazın çözünürlüğü, kare hızı, bit hızı ve ses bant genişliğiyle dönüştürülür.
-- Kamerayla çek ya da galerideki foto/videoyu dönüştür.
-- Sonuçlar Galeri'de Pictures/EskiKamera ve Movies/EskiKamera klasörlerine kaydedilir.
-- Hata olursa "Hata raporunu kopyala" butonuyla ayrıntılı rapor alıp yapıştırabilirsin.
-- Bilinen: görünüm ayarları tahminidir, gerçek örneklerle ince ayar yapılacak.
+- Listeden bir eski cihaz seç (tuşlu telefonlar, eski dijital kameralar, kamkorderler); fotoğraf ve video (ses dahil) o cihazda çekilmiş gibi kaydedilir.
+- Kamerayla çek ya da galerideki foto/videoyu dönüştür. Sonuçlar Galeri'de Pictures/EskiKamera ve Movies/EskiKamera klasörlerine gider.
+- Video ve ses cihazın çözünürlüğü, kare hızı, bit hızı ve ses bant genişliğiyle kodlanır (3GP/H.263 ve AMR-NB telefonda destekleniyorsa kullanılır, yoksa H.264/AAC).
+- Hata olursa "Hata raporunu kopyala" butonuyla ayrıntılı raporu alıp bana yapıştırabilirsin.
+- Emülatörde foto çekimi, video çekimi, dönüştürme ve kamera ekranı test edildi; gerçek telefonda test edilmedi.
+- Bilinen: kamera önizlemesi ham görüntüyü gösterir, görünüm kayıttan sonra uygulanır. Görünüm ayarları tahminidir.
