@@ -240,15 +240,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     internal fun takePhoto() {
+        ErrorLog.add("takePhoto çağrıldı (busy=$busy, kamera=${imageCapture != null})")
         val ic = imageCapture
         if (ic == null) { say("Kamera hazır değil."); return }
         if (busy) return
         val file = File(cacheDir, "cekim_${System.currentTimeMillis()}.jpg")
         setBusy(true)
         say("Fotoğraf çekiliyor...")
+        ErrorLog.add("takePicture başlıyor: ${file.name}")
         ic.takePicture(ImageCapture.OutputFileOptions.Builder(file).build(), ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                    ErrorLog.add("Foto dosyası kaydedildi: ${file.length()} bayt")
                     setBusy(false)
                     processPhoto(Uri.fromFile(file), file)
                 }
