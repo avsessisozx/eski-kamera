@@ -14,10 +14,31 @@ import kotlin.math.sqrt
  */
 object LookProcessor {
     private const val BAND = 128
+    private val BAYER4 = intArrayOf(0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5)
+    private val GB_PALETTE = intArrayOf(0xFF0F380F.toInt(), 0xFF306230.toInt(), 0xFF8BAC0F.toInt(), 0xFF9BBC0F.toInt())
+
+    private val pool by lazy {
+        Executors.newFixedThreadPool(max(2, min(4, Runtime.getRuntime().availableProcessors()))) { r ->
+            Thread(r, "look-worker").apply { isDaemon = true }
+        }
+    }
 
     /** Fotoğraf: büyük görüntüleri bantlara bölüp çok iş parçacığıyla işler. */
     fun processPhoto(src: IntArray, w: Int, h: Int, look: Look, seed: Long, threads: Int = 4): IntArray {
         val out = IntArray(w * h)
+        runBands(src, out, w, h, look, seed, threads)
+        hotPixels(out, w, h, look, seed)
+        return out
+    }
+
+    /** Video karesi / önizleme: bayer ve hot pixel yok, bantlar paralel işlenir. */
+    fun processFrame(src: IntArray, w: Int, h: Int, look: Look, seed: Long, threads: Int = 4): IntArray {
+        val out = IntArray(w * h)
+        runBands(src, out, w, h, look, seed, threads)
+        return out
+    }
+
+    private fun runBands(src: IntArray, out: IntArray, w: Int, h: Int, look: Look, seed: Long, threads: Int) {
         var pad = 4
         pad = max(pad, ceil(3.0 * look.blur).toInt() + 2)
         if (look.bloom > 0f) pad = max(pad, ceil(3.0 * bloomSigma(w)).toInt() + 2)
@@ -26,23 +47,9 @@ object LookProcessor {
         if (bands <= 1 || threads <= 1) {
             for (b in 0 until bands) runBand(src, out, w, h, b, pad, look, seed)
         } else {
-            val pool = Executors.newFixedThreadPool(threads)
-            try {
-                val tasks = (0 until bands).map { b -> Callable { runBand(src, out, w, h, b, pad, look, seed) } }
-                pool.invokeAll(tasks).forEach { it.get() }
-            } finally {
-                pool.shutdown()
-            }
+            val tasks = (0 until bands).map { b -> Callable { runBand(src, out, w, h, b, pad, look, seed) } }
+            pool.invokeAll(tasks).forEach { it.get() }
         }
-        hotPixels(out, w, h, look, seed)
-        return out
-    }
-
-    /** Video karesi: tek bant, bayer/bloom/hot pixel yok. */
-    fun processFrame(src: IntArray, w: Int, h: Int, look: Look, seed: Long): IntArray {
-        val out = IntArray(w * h)
-        processBand(src, out, w, h, 0, h, 0, h, look, seed)
-        return out
     }
 
     private fun bloomSigma(w: Int): Double = max(2.0, w * 0.012)
@@ -164,10 +171,20 @@ object LookProcessor {
                     rr += c0 - mean; gg += c1 - mean; bb += c2 - mean
                 }
                 rr += bandNoise; gg += bandNoise; bb += bandNoise
-                val ir = (clamp01(rr) * 255f + 0.5f).toInt()
-                val ig = (clamp01(gg) * 255f + 0.5f).toInt()
-                val ib = (clamp01(bb) * 255f + 0.5f).toInt()
-                out[y * w + x] = (0xFF shl 24) or (ir shl 16) or (ig shl 8) or ib
+                if (look.levels > 0) {
+                    val l = clamp01(0.299f * rr + 0.587f * gg + 0.114f * bb)
+                    val thr = (BAYER4[(y and 3) * 4 + (x and 3)] + 0.5f) / 16f - 0.5f
+                    val q = ((l * (look.levels - 1)) + 0.5f + thr * 0.8f).toInt().coerceIn(0, look.levels - 1)
+                    out[y * w + x] = if (look.palette == 1 && look.levels == 4) GB_PALETTE[q] else {
+                        val gv = (q * 255f / (look.levels - 1) + 0.5f).toInt()
+                        (0xFF shl 24) or (gv shl 16) or (gv shl 8) or gv
+                    }
+                } else {
+                    val ir = (clamp01(rr) * 255f + 0.5f).toInt()
+                    val ig = (clamp01(gg) * 255f + 0.5f).toInt()
+                    val ib = (clamp01(bb) * 255f + 0.5f).toInt()
+                    out[y * w + x] = (0xFF shl 24) or (ir shl 16) or (ig shl 8) or ib
+                }
             }
         }
     }

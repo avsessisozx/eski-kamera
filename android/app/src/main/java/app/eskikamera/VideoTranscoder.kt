@@ -35,12 +35,14 @@ object VideoTranscoder {
             var vIdx = -1
             var aIdx = -1
             var durationUs = 0L
+            var rotation = 0
             for (i in 0 until probe.trackCount) {
                 val f = probe.getTrackFormat(i)
                 val mime = f.getString(MediaFormat.KEY_MIME) ?: continue
                 if (mime.startsWith("video/") && vIdx < 0) {
                     vIdx = i
                     if (f.containsKey(MediaFormat.KEY_DURATION)) durationUs = f.getLong(MediaFormat.KEY_DURATION)
+                    if (f.containsKey(MediaFormat.KEY_ROTATION)) rotation = f.getInteger(MediaFormat.KEY_ROTATION)
                 } else if (mime.startsWith("audio/") && aIdx < 0) {
                     aIdx = i
                 }
@@ -77,14 +79,14 @@ object VideoTranscoder {
             var ext = if (primaryType == MediaMuxer.OutputFormat.MUXER_OUTPUT_3GPP) ".3gp" else ".mp4"
             var outFile = File(outDir, baseName + ext)
             try {
-                mux(primaryType, vTmp, if (aIdx >= 0) aTmp else null, outFile)
+                mux(primaryType, vTmp, if (aIdx >= 0) aTmp else null, outFile, rotation)
             } catch (e: Exception) {
                 if (primaryType == MediaMuxer.OutputFormat.MUXER_OUTPUT_3GPP) {
                     log("3GP birleştirme olmadı (${e.message}), MP4 kullanılıyor")
                     outFile.delete()
                     ext = ".mp4"
                     outFile = File(outDir, baseName + ext)
-                    mux(MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4, vTmp, if (aIdx >= 0) aTmp else null, outFile)
+                    mux(MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4, vTmp, if (aIdx >= 0) aTmp else null, outFile, rotation)
                 } else throw e
             }
             progress(1f)
@@ -111,12 +113,12 @@ object VideoTranscoder {
         return ex
     }
 
-    private class Enc(val codec: MediaCodec, val mime: String)
+    internal class Enc(val codec: MediaCodec, val mime: String)
 
-    private fun wantedMime(mode: VideoMode): String =
+    internal fun wantedMime(mode: VideoMode): String =
         when (mode.codec) { "h263" -> "video/3gpp"; "mpeg4" -> "video/mp4v-es"; else -> "video/avc" }
 
-    private fun createVideoEncoder(mode: VideoMode, mime: String): Enc {
+    internal fun createVideoEncoder(mode: VideoMode, mime: String): Enc {
         var codec: MediaCodec? = null
         try {
             val f = MediaFormat.createVideoFormat(mime, mode.width, mode.height)
@@ -153,7 +155,7 @@ object VideoTranscoder {
         )
     }
 
-    private fun fillImage(img: Image, yuv: Array<ByteArray>, w: Int, h: Int) {
+    internal fun fillImage(img: Image, yuv: Array<ByteArray>, w: Int, h: Int) {
         for (p in 0..2) {
             val pl = img.planes[p]
             val buf = pl.buffer
@@ -186,7 +188,6 @@ object VideoTranscoder {
             ex.selectTrack(vIdx)
             val inFmt = ex.getTrackFormat(vIdx)
             val inMime = inFmt.getString(MediaFormat.KEY_MIME)!!
-            val rotation = if (inFmt.containsKey(MediaFormat.KEY_ROTATION)) inFmt.getInteger(MediaFormat.KEY_ROTATION) else 0
             inFmt.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
             val decoder = MediaCodec.createDecoderByType(inMime)
             dec = decoder
@@ -278,7 +279,7 @@ object VideoTranscoder {
                                 val img = decoder.getOutputImage(ob)
                                 if (img != null) {
                                     val frame = try { copyFrame(img) } finally { img.close() }
-                                    val rgb = FrameSampler.toRgb(frame, rotation, mode.width, mode.height, device.videoPrescale)
+                                    val rgb = FrameSampler.toRgb(frame, 0, mode.width, mode.height, device.videoPrescale)
                                     val proc = LookProcessor.processFrame(rgb, mode.width, mode.height, look, seedBase + framesIn)
                                     val yuv = FrameSampler.rgbToYuv420(proc, mode.width, mode.height)
                                     val ei = encoderInput()
@@ -317,7 +318,7 @@ object VideoTranscoder {
     }
 
     // ------------------------------------------------------------------ ses
-    private fun createAudioEncoder(spec: AudioSpec, wantAmr: Boolean, log: (String) -> Unit): Enc {
+    internal fun createAudioEncoder(spec: AudioSpec, wantAmr: Boolean, log: (String) -> Unit): Enc {
         if (wantAmr) {
             var c: MediaCodec? = null
             try {
@@ -505,8 +506,9 @@ object VideoTranscoder {
         throw ProcessException("Geçici dosyada $prefix akışı yok")
     }
 
-    private fun mux(muxType: Int, vFile: File, aFile: File?, outFile: File) {
+    private fun mux(muxType: Int, vFile: File, aFile: File?, outFile: File, rotation: Int) {
         val m = MediaMuxer(outFile.path, muxType)
+        if (rotation == 0 || rotation == 90 || rotation == 180 || rotation == 270) m.setOrientationHint(rotation)
         val vEx = MediaExtractor()
         var aEx: MediaExtractor? = null
         try {

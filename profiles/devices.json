@@ -2,182 +2,1410 @@
   "_info": "Cihaz profilleri. 'spec_source' = çözünürlük/codec/fps gibi açık özelliklerin kaynağı; 'look_source' = görünüm (gürültü, renk, bulanıklık) ayarları tahminidir ve gerçek örnek dosyalarla sonradan ince ayar yapılacaktır.",
   "defaults": {
     "photo_look": {
-      "blur": 0.6, "sharpen": 0.3, "noise_luma": 3.0, "noise_chroma": 2.0, "banding": 0.0,
-      "contrast": 1.0, "saturation": 1.0, "gamma": 1.0, "cast": [1.0, 1.0, 1.0],
-      "vignette": 0.0, "bloom": 0.0, "bayer": false, "jpeg_quality": 85, "hot_pixels": 0
+      "blur": 0.6,
+      "sharpen": 0.3,
+      "noise_luma": 3.0,
+      "noise_chroma": 2.0,
+      "banding": 0.0,
+      "contrast": 1.0,
+      "saturation": 1.0,
+      "gamma": 1.0,
+      "cast": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "vignette": 0.0,
+      "bloom": 0.0,
+      "bayer": false,
+      "jpeg_quality": 85,
+      "hot_pixels": 0,
+      "levels": 0,
+      "palette": 0
     },
     "video_look": {
-      "blur": 0.6, "sharpen": 0.2, "noise": 4, "contrast": 1.0, "saturation": 1.0, "gamma": 1.0,
-      "cast": [1.0, 1.0, 1.0], "vignette": 0.0, "chroma_bleed": 0, "prescale": null
+      "blur": 0.6,
+      "sharpen": 0.2,
+      "noise": 4,
+      "contrast": 1.0,
+      "saturation": 1.0,
+      "gamma": 1.0,
+      "cast": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "vignette": 0.0,
+      "chroma_bleed": 0,
+      "prescale": null
     }
   },
   "devices": [
     {
-      "id": "genel_cif_telefon", "name": "Çok eski tuşlu telefon (0.1 MP, CIF)", "category": "telefon", "year": 2002,
-      "spec_source": "tahmini (genel, ilk kamera telefonları)", "look_source": "tahmini",
-      "photo": { "width": 352, "height": 288, "format": "jpg",
-        "look": { "blur": 1.1, "sharpen": 0.1, "noise_luma": 7, "noise_chroma": 5, "contrast": 0.92, "saturation": 0.85, "gamma": 1.1, "cast": [1.04, 1.0, 0.92], "bayer": true, "jpeg_quality": 55, "banding": 0.15, "hot_pixels": 6 } },
-      "video": { "default": 0, "modes": [
-        { "label": "128x96 10fps (3GP)", "width": 128, "height": 96, "fps": 10, "codec": "h263", "container": "3gp", "video_kbps": 40,
-          "audio": { "rate": 8000, "channels": 1, "kbps": 12 } } ],
-        "look": { "blur": 0.8, "noise": 8, "contrast": 0.92, "saturation": 0.85, "gamma": 1.1, "cast": [1.04, 1.0, 0.92] } }
+      "id": "genel_cif_telefon",
+      "name": "Çok eski tuşlu telefon (0.1 MP, CIF)",
+      "category": "telefon",
+      "year": 2002,
+      "spec_source": "tahmini (genel, ilk kamera telefonları)",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 352,
+        "height": 288,
+        "format": "jpg",
+        "look": {
+          "blur": 1.1,
+          "sharpen": 0.1,
+          "noise_luma": 7,
+          "noise_chroma": 5,
+          "contrast": 0.92,
+          "saturation": 0.85,
+          "gamma": 1.1,
+          "cast": [
+            1.04,
+            1.0,
+            0.92
+          ],
+          "bayer": true,
+          "jpeg_quality": 55,
+          "banding": 0.15,
+          "hot_pixels": 6
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "128x96 10fps (3GP)",
+            "width": 128,
+            "height": 96,
+            "fps": 10,
+            "codec": "h263",
+            "container": "3gp",
+            "video_kbps": 40,
+            "audio": {
+              "rate": 8000,
+              "channels": 1,
+              "kbps": 12
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.8,
+          "noise": 8,
+          "contrast": 0.92,
+          "saturation": 0.85,
+          "gamma": 1.1,
+          "cast": [
+            1.04,
+            1.0,
+            0.92
+          ]
+        }
+      },
+      "note": "2000'lerin başındaki ilk kameralı telefonların seviyesi"
     },
     {
-      "id": "genel_vga_telefon", "name": "Eski tuşlu telefon (0.3 MP, VGA)", "category": "telefon", "year": 2005,
-      "spec_source": "kaynaklı: 640x480, 0.3 MP tuşlu telefon kamerası (0.3MP Camera uygulaması açıklaması)", "look_source": "tahmini",
-      "photo": { "width": 640, "height": 480, "format": "jpg",
-        "look": { "blur": 0.9, "sharpen": 0.15, "noise_luma": 6, "noise_chroma": 4, "contrast": 0.95, "saturation": 0.9, "gamma": 1.08, "cast": [1.03, 1.0, 0.94], "bayer": true, "jpeg_quality": 65, "banding": 0.1, "hot_pixels": 4, "bloom": 0.1 } },
-      "video": { "default": 0, "modes": [
-        { "label": "176x144 15fps (3GP)", "width": 176, "height": 144, "fps": 15, "codec": "h263", "container": "3gp", "video_kbps": 128,
-          "audio": { "rate": 8000, "channels": 1, "kbps": 12 } },
-        { "label": "128x96 15fps (3GP)", "width": 128, "height": 96, "fps": 15, "codec": "h263", "container": "3gp", "video_kbps": 64,
-          "audio": { "rate": 8000, "channels": 1, "kbps": 12 } } ],
-        "look": { "blur": 0.7, "noise": 7, "contrast": 0.95, "saturation": 0.9, "gamma": 1.08, "cast": [1.03, 1.0, 0.94] } }
+      "id": "genel_vga_telefon",
+      "name": "Eski tuşlu telefon (0.3 MP, VGA)",
+      "category": "telefon",
+      "year": 2005,
+      "spec_source": "kaynaklı: 640x480, 0.3 MP tuşlu telefon kamerası (0.3MP Camera uygulaması açıklaması)",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 640,
+        "height": 480,
+        "format": "jpg",
+        "look": {
+          "blur": 0.9,
+          "sharpen": 0.15,
+          "noise_luma": 6,
+          "noise_chroma": 4,
+          "contrast": 0.95,
+          "saturation": 0.9,
+          "gamma": 1.08,
+          "cast": [
+            1.03,
+            1.0,
+            0.94
+          ],
+          "bayer": true,
+          "jpeg_quality": 65,
+          "banding": 0.1,
+          "hot_pixels": 4,
+          "bloom": 0.1
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "176x144 15fps (3GP)",
+            "width": 176,
+            "height": 144,
+            "fps": 15,
+            "codec": "h263",
+            "container": "3gp",
+            "video_kbps": 128,
+            "audio": {
+              "rate": 8000,
+              "channels": 1,
+              "kbps": 12
+            }
+          },
+          {
+            "label": "128x96 15fps (3GP)",
+            "width": 128,
+            "height": 96,
+            "fps": 15,
+            "codec": "h263",
+            "container": "3gp",
+            "video_kbps": 64,
+            "audio": {
+              "rate": 8000,
+              "channels": 1,
+              "kbps": 12
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.7,
+          "noise": 7,
+          "contrast": 0.95,
+          "saturation": 0.9,
+          "gamma": 1.08,
+          "cast": [
+            1.03,
+            1.0,
+            0.94
+          ]
+        }
+      },
+      "note": "Tuşlu telefon çağının 0.3 MP VGA kamerası"
     },
     {
-      "id": "nokia_6230", "name": "Nokia 6230 (2004)", "category": "telefon", "year": 2004,
-      "spec_source": "kısmen kaynaklı: VGA foto; video H.263 128x96/176x144, ~15 fps, ~128 kbps (kullanıcı yorumları)", "look_source": "tahmini",
-      "photo": { "width": 640, "height": 480, "format": "jpg",
-        "look": { "blur": 0.95, "sharpen": 0.1, "noise_luma": 6, "noise_chroma": 5, "contrast": 0.93, "saturation": 0.88, "gamma": 1.1, "cast": [1.04, 1.0, 0.93], "bayer": true, "jpeg_quality": 60, "banding": 0.12, "hot_pixels": 5 } },
-      "video": { "default": 0, "modes": [
-        { "label": "176x144 15fps (3GP)", "width": 176, "height": 144, "fps": 15, "codec": "h263", "container": "3gp", "video_kbps": 128,
-          "audio": { "rate": 8000, "channels": 1, "kbps": 12 } },
-        { "label": "128x96 15fps (3GP)", "width": 128, "height": 96, "fps": 15, "codec": "h263", "container": "3gp", "video_kbps": 64,
-          "audio": { "rate": 8000, "channels": 1, "kbps": 12 } } ],
-        "look": { "blur": 0.8, "noise": 7, "contrast": 0.93, "saturation": 0.88, "gamma": 1.1, "cast": [1.04, 1.0, 0.93] } }
+      "id": "nokia_6230",
+      "name": "Nokia 6230 (2004)",
+      "category": "telefon",
+      "year": 2004,
+      "spec_source": "kısmen kaynaklı: VGA foto; video H.263 128x96/176x144, ~15 fps, ~128 kbps (kullanıcı yorumları)",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 640,
+        "height": 480,
+        "format": "jpg",
+        "look": {
+          "blur": 0.95,
+          "sharpen": 0.1,
+          "noise_luma": 6,
+          "noise_chroma": 5,
+          "contrast": 0.93,
+          "saturation": 0.88,
+          "gamma": 1.1,
+          "cast": [
+            1.04,
+            1.0,
+            0.93
+          ],
+          "bayer": true,
+          "jpeg_quality": 60,
+          "banding": 0.12,
+          "hot_pixels": 5
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "176x144 15fps (3GP)",
+            "width": 176,
+            "height": 144,
+            "fps": 15,
+            "codec": "h263",
+            "container": "3gp",
+            "video_kbps": 128,
+            "audio": {
+              "rate": 8000,
+              "channels": 1,
+              "kbps": 12
+            }
+          },
+          {
+            "label": "128x96 15fps (3GP)",
+            "width": 128,
+            "height": 96,
+            "fps": 15,
+            "codec": "h263",
+            "container": "3gp",
+            "video_kbps": 64,
+            "audio": {
+              "rate": 8000,
+              "channels": 1,
+              "kbps": 12
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.8,
+          "noise": 7,
+          "contrast": 0.93,
+          "saturation": 0.88,
+          "gamma": 1.1,
+          "cast": [
+            1.04,
+            1.0,
+            0.93
+          ]
+        }
+      },
+      "note": "2004'ün popüler Nokia'sı, VGA kamera"
     },
     {
-      "id": "nokia_6280", "name": "Nokia 6280 (2005)", "category": "telefon", "year": 2005,
-      "spec_source": "video kaynaklı (Wikipedia): 128x96, 176x144, 352x288, 640x480, 3GP, 13 fps; foto 2 MP tahmini", "look_source": "tahmini",
-      "photo": { "width": 1600, "height": 1200, "format": "jpg",
-        "look": { "blur": 1.0, "sharpen": 0.25, "noise_luma": 5, "noise_chroma": 4, "contrast": 0.96, "saturation": 0.92, "gamma": 1.05, "cast": [1.03, 1.0, 0.95], "bayer": true, "jpeg_quality": 72, "hot_pixels": 8 } },
-      "video": { "default": 1, "modes": [
-        { "label": "176x144 13fps (3GP)", "width": 176, "height": 144, "fps": 13, "codec": "h263", "container": "3gp", "video_kbps": 128,
-          "audio": { "rate": 8000, "channels": 1, "kbps": 12 } },
-        { "label": "352x288 13fps (3GP)", "width": 352, "height": 288, "fps": 13, "codec": "h263", "container": "3gp", "video_kbps": 256,
-          "audio": { "rate": 8000, "channels": 1, "kbps": 12 } },
-        { "label": "640x480 13fps (3GP)", "width": 640, "height": 480, "fps": 13, "codec": "mpeg4", "container": "3gp", "video_kbps": 512,
-          "audio": { "rate": 8000, "channels": 1, "kbps": 12 } } ],
-        "look": { "blur": 0.8, "noise": 6, "contrast": 0.96, "saturation": 0.92, "gamma": 1.05, "cast": [1.03, 1.0, 0.95] } }
+      "id": "nokia_6280",
+      "name": "Nokia 6280 (2005)",
+      "category": "telefon",
+      "year": 2005,
+      "spec_source": "video kaynaklı (Wikipedia): 128x96, 176x144, 352x288, 640x480, 3GP, 13 fps; foto 2 MP tahmini",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 1600,
+        "height": 1200,
+        "format": "jpg",
+        "look": {
+          "blur": 1.0,
+          "sharpen": 0.25,
+          "noise_luma": 5,
+          "noise_chroma": 4,
+          "contrast": 0.96,
+          "saturation": 0.92,
+          "gamma": 1.05,
+          "cast": [
+            1.03,
+            1.0,
+            0.95
+          ],
+          "bayer": true,
+          "jpeg_quality": 72,
+          "hot_pixels": 8
+        }
+      },
+      "video": {
+        "default": 1,
+        "modes": [
+          {
+            "label": "176x144 13fps (3GP)",
+            "width": 176,
+            "height": 144,
+            "fps": 13,
+            "codec": "h263",
+            "container": "3gp",
+            "video_kbps": 128,
+            "audio": {
+              "rate": 8000,
+              "channels": 1,
+              "kbps": 12
+            }
+          },
+          {
+            "label": "352x288 13fps (3GP)",
+            "width": 352,
+            "height": 288,
+            "fps": 13,
+            "codec": "h263",
+            "container": "3gp",
+            "video_kbps": 256,
+            "audio": {
+              "rate": 8000,
+              "channels": 1,
+              "kbps": 12
+            }
+          },
+          {
+            "label": "640x480 13fps (3GP)",
+            "width": 640,
+            "height": 480,
+            "fps": 13,
+            "codec": "mpeg4",
+            "container": "3gp",
+            "video_kbps": 512,
+            "audio": {
+              "rate": 8000,
+              "channels": 1,
+              "kbps": 12
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.8,
+          "noise": 6,
+          "contrast": 0.96,
+          "saturation": 0.92,
+          "gamma": 1.05,
+          "cast": [
+            1.03,
+            1.0,
+            0.95
+          ]
+        }
+      }
     },
     {
-      "id": "nokia_n95", "name": "Nokia N95 (2007)", "category": "telefon", "year": 2007,
-      "spec_source": "kaynaklı: foto 2582x1944 (5 MP); video VGA 30 fps MPEG-4; CIF H.264 30 fps", "look_source": "tahmini",
-      "photo": { "width": 2592, "height": 1944, "format": "jpg",
-        "look": { "blur": 1.1, "sharpen": 0.5, "noise_luma": 3.5, "noise_chroma": 2.5, "contrast": 1.04, "saturation": 1.05, "gamma": 1.0, "cast": [1.0, 1.0, 0.98], "jpeg_quality": 86, "vignette": 0.12 } },
-      "video": { "default": 0, "modes": [
-        { "label": "640x480 30fps (MP4)", "width": 640, "height": 480, "fps": 30, "codec": "mpeg4", "container": "mp4", "video_kbps": 1500,
-          "audio": { "rate": 32000, "channels": 1, "kbps": 64 } },
-        { "label": "352x288 30fps (3GP)", "width": 352, "height": 288, "fps": 30, "codec": "h264", "container": "3gp", "video_kbps": 512,
-          "audio": { "rate": 16000, "channels": 1, "kbps": 24 } },
-        { "label": "176x144 15fps (3GP)", "width": 176, "height": 144, "fps": 15, "codec": "h263", "container": "3gp", "video_kbps": 128,
-          "audio": { "rate": 8000, "channels": 1, "kbps": 12 } } ],
-        "look": { "blur": 0.7, "noise": 4, "contrast": 1.03, "saturation": 1.04, "vignette": 0.1 } }
+      "id": "nokia_n95",
+      "name": "Nokia N95 (2007)",
+      "category": "telefon",
+      "year": 2007,
+      "spec_source": "kaynaklı: foto 2582x1944 (5 MP); video VGA 30 fps MPEG-4; CIF H.264 30 fps",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 2592,
+        "height": 1944,
+        "format": "jpg",
+        "look": {
+          "blur": 1.1,
+          "sharpen": 0.5,
+          "noise_luma": 3.5,
+          "noise_chroma": 2.5,
+          "contrast": 1.04,
+          "saturation": 1.05,
+          "gamma": 1.0,
+          "cast": [
+            1.0,
+            1.0,
+            0.98
+          ],
+          "jpeg_quality": 86,
+          "vignette": 0.12
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "640x480 30fps (MP4)",
+            "width": 640,
+            "height": 480,
+            "fps": 30,
+            "codec": "mpeg4",
+            "container": "mp4",
+            "video_kbps": 1500,
+            "audio": {
+              "rate": 32000,
+              "channels": 1,
+              "kbps": 64
+            }
+          },
+          {
+            "label": "352x288 30fps (3GP)",
+            "width": 352,
+            "height": 288,
+            "fps": 30,
+            "codec": "h264",
+            "container": "3gp",
+            "video_kbps": 512,
+            "audio": {
+              "rate": 16000,
+              "channels": 1,
+              "kbps": 24
+            }
+          },
+          {
+            "label": "176x144 15fps (3GP)",
+            "width": 176,
+            "height": 144,
+            "fps": 15,
+            "codec": "h263",
+            "container": "3gp",
+            "video_kbps": 128,
+            "audio": {
+              "rate": 8000,
+              "channels": 1,
+              "kbps": 12
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.7,
+          "noise": 4,
+          "contrast": 1.03,
+          "saturation": 1.04,
+          "vignette": 0.1
+        }
+      },
+      "note": "2007'nin 5 MP amiral gemisi, VGA 30 fps video"
     },
     {
-      "id": "nokia_n93i", "name": "Nokia N93i (2007)", "category": "telefon", "year": 2007,
-      "spec_source": "kaynaklı (Wikipedia): 3.2 MP 2048x1536; video 640x480 30 fps (H.263, H.264, MPEG-4)", "look_source": "tahmini",
-      "photo": { "width": 2048, "height": 1536, "format": "jpg",
-        "look": { "blur": 1.0, "sharpen": 0.5, "noise_luma": 3.5, "noise_chroma": 2.5, "contrast": 1.03, "saturation": 1.04, "cast": [1.0, 1.0, 0.98], "jpeg_quality": 85, "vignette": 0.1 } },
-      "video": { "default": 0, "modes": [
-        { "label": "640x480 30fps (MP4)", "width": 640, "height": 480, "fps": 30, "codec": "mpeg4", "container": "mp4", "video_kbps": 1800,
-          "audio": { "rate": 32000, "channels": 2, "kbps": 96 } },
-        { "label": "176x144 15fps (3GP)", "width": 176, "height": 144, "fps": 15, "codec": "h263", "container": "3gp", "video_kbps": 128,
-          "audio": { "rate": 8000, "channels": 1, "kbps": 12 } } ],
-        "look": { "blur": 0.7, "noise": 4, "contrast": 1.03, "saturation": 1.04 } }
+      "id": "nokia_n93i",
+      "name": "Nokia N93i (2007)",
+      "category": "telefon",
+      "year": 2007,
+      "spec_source": "kaynaklı (Wikipedia): 3.2 MP 2048x1536; video 640x480 30 fps (H.263, H.264, MPEG-4)",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 2048,
+        "height": 1536,
+        "format": "jpg",
+        "look": {
+          "blur": 1.0,
+          "sharpen": 0.5,
+          "noise_luma": 3.5,
+          "noise_chroma": 2.5,
+          "contrast": 1.03,
+          "saturation": 1.04,
+          "cast": [
+            1.0,
+            1.0,
+            0.98
+          ],
+          "jpeg_quality": 85,
+          "vignette": 0.1
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "640x480 30fps (MP4)",
+            "width": 640,
+            "height": 480,
+            "fps": 30,
+            "codec": "mpeg4",
+            "container": "mp4",
+            "video_kbps": 1800,
+            "audio": {
+              "rate": 32000,
+              "channels": 2,
+              "kbps": 96
+            }
+          },
+          {
+            "label": "176x144 15fps (3GP)",
+            "width": 176,
+            "height": 144,
+            "fps": 15,
+            "codec": "h263",
+            "container": "3gp",
+            "video_kbps": 128,
+            "audio": {
+              "rate": 8000,
+              "channels": 1,
+              "kbps": 12
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.7,
+          "noise": 4,
+          "contrast": 1.03,
+          "saturation": 1.04
+        }
+      }
     },
     {
-      "id": "se_k550", "name": "Sony Ericsson K550 (2007)", "category": "telefon", "year": 2007,
-      "spec_source": "kısmen kaynaklı: video QVGA 320x240 30 fps (kullanıcı yorumları); foto 2 MP tahmini", "look_source": "tahmini",
-      "photo": { "width": 1600, "height": 1200, "format": "jpg",
-        "look": { "blur": 0.9, "sharpen": 0.55, "noise_luma": 4.5, "noise_chroma": 3, "contrast": 1.06, "saturation": 1.1, "gamma": 0.98, "cast": [1.02, 1.0, 0.97], "bayer": true, "jpeg_quality": 78, "hot_pixels": 5 } },
-      "video": { "default": 0, "modes": [
-        { "label": "320x240 30fps (MP4)", "width": 320, "height": 240, "fps": 30, "codec": "mpeg4", "container": "mp4", "video_kbps": 768,
-          "audio": { "rate": 16000, "channels": 1, "kbps": 32 } },
-        { "label": "176x144 15fps (3GP)", "width": 176, "height": 144, "fps": 15, "codec": "h263", "container": "3gp", "video_kbps": 128,
-          "audio": { "rate": 8000, "channels": 1, "kbps": 12 } } ],
-        "look": { "blur": 0.7, "noise": 5, "contrast": 1.06, "saturation": 1.1, "gamma": 0.98, "cast": [1.02, 1.0, 0.97] } }
+      "id": "se_k550",
+      "name": "Sony Ericsson K550 (2007)",
+      "category": "telefon",
+      "year": 2007,
+      "spec_source": "kısmen kaynaklı: video QVGA 320x240 30 fps (kullanıcı yorumları); foto 2 MP tahmini",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 1600,
+        "height": 1200,
+        "format": "jpg",
+        "look": {
+          "blur": 0.9,
+          "sharpen": 0.55,
+          "noise_luma": 4.5,
+          "noise_chroma": 3,
+          "contrast": 1.06,
+          "saturation": 1.1,
+          "gamma": 0.98,
+          "cast": [
+            1.02,
+            1.0,
+            0.97
+          ],
+          "bayer": true,
+          "jpeg_quality": 78,
+          "hot_pixels": 5
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "320x240 30fps (MP4)",
+            "width": 320,
+            "height": 240,
+            "fps": 30,
+            "codec": "mpeg4",
+            "container": "mp4",
+            "video_kbps": 768,
+            "audio": {
+              "rate": 16000,
+              "channels": 1,
+              "kbps": 32
+            }
+          },
+          {
+            "label": "176x144 15fps (3GP)",
+            "width": 176,
+            "height": 144,
+            "fps": 15,
+            "codec": "h263",
+            "container": "3gp",
+            "video_kbps": 128,
+            "audio": {
+              "rate": 8000,
+              "channels": 1,
+              "kbps": 12
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.7,
+          "noise": 5,
+          "contrast": 1.06,
+          "saturation": 1.1,
+          "gamma": 0.98,
+          "cast": [
+            1.02,
+            1.0,
+            0.97
+          ]
+        }
+      }
     },
     {
-      "id": "se_k850i", "name": "Sony Ericsson K850i (2007)", "category": "telefon", "year": 2007,
-      "spec_source": "kaynaklı (Wikipedia): 5 MP CMOS; video QVGA 320x240 30 fps", "look_source": "tahmini",
-      "photo": { "width": 2592, "height": 1944, "format": "jpg",
-        "look": { "blur": 1.0, "sharpen": 0.6, "noise_luma": 4, "noise_chroma": 3, "contrast": 1.06, "saturation": 1.1, "cast": [1.01, 1.0, 0.97], "jpeg_quality": 84, "vignette": 0.15 } },
-      "video": { "default": 0, "modes": [
-        { "label": "320x240 30fps (MP4)", "width": 320, "height": 240, "fps": 30, "codec": "mpeg4", "container": "mp4", "video_kbps": 768,
-          "audio": { "rate": 16000, "channels": 1, "kbps": 32 } },
-        { "label": "176x144 15fps (3GP)", "width": 176, "height": 144, "fps": 15, "codec": "h263", "container": "3gp", "video_kbps": 128,
-          "audio": { "rate": 8000, "channels": 1, "kbps": 12 } } ],
-        "look": { "blur": 0.7, "noise": 4, "contrast": 1.06, "saturation": 1.1, "cast": [1.01, 1.0, 0.97] } }
+      "id": "se_k850i",
+      "name": "Sony Ericsson K850i (2007)",
+      "category": "telefon",
+      "year": 2007,
+      "spec_source": "kaynaklı (Wikipedia): 5 MP CMOS; video QVGA 320x240 30 fps",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 2592,
+        "height": 1944,
+        "format": "jpg",
+        "look": {
+          "blur": 1.0,
+          "sharpen": 0.6,
+          "noise_luma": 4,
+          "noise_chroma": 3,
+          "contrast": 1.06,
+          "saturation": 1.1,
+          "cast": [
+            1.01,
+            1.0,
+            0.97
+          ],
+          "jpeg_quality": 84,
+          "vignette": 0.15
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "320x240 30fps (MP4)",
+            "width": 320,
+            "height": 240,
+            "fps": 30,
+            "codec": "mpeg4",
+            "container": "mp4",
+            "video_kbps": 768,
+            "audio": {
+              "rate": 16000,
+              "channels": 1,
+              "kbps": 32
+            }
+          },
+          {
+            "label": "176x144 15fps (3GP)",
+            "width": 176,
+            "height": 144,
+            "fps": 15,
+            "codec": "h263",
+            "container": "3gp",
+            "video_kbps": 128,
+            "audio": {
+              "rate": 8000,
+              "channels": 1,
+              "kbps": 12
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.7,
+          "noise": 4,
+          "contrast": 1.06,
+          "saturation": 1.1,
+          "cast": [
+            1.01,
+            1.0,
+            0.97
+          ]
+        }
+      }
     },
     {
-      "id": "olympus_e20", "name": "Olympus E-20 (2001, 5 MP CCD)", "category": "dijital kamera", "year": 2001,
-      "spec_source": "kaynaklı (DPReview): 2560x1920, 2/3\" CCD, ISO 80-320; video yok", "look_source": "tahmini",
-      "photo": { "width": 2560, "height": 1920, "format": "jpg",
-        "look": { "blur": 0.7, "sharpen": 0.35, "noise_luma": 2.2, "noise_chroma": 1.5, "contrast": 1.05, "saturation": 1.08, "cast": [1.0, 1.0, 1.0], "jpeg_quality": 90, "vignette": 0.12 } },
+      "id": "olympus_e20",
+      "name": "Olympus E-20 (2001, 5 MP CCD)",
+      "category": "dijital kamera",
+      "year": 2001,
+      "spec_source": "kaynaklı (DPReview): 2560x1920, 2/3\" CCD, ISO 80-320; video yok",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 2560,
+        "height": 1920,
+        "format": "jpg",
+        "look": {
+          "blur": 0.7,
+          "sharpen": 0.35,
+          "noise_luma": 2.2,
+          "noise_chroma": 1.5,
+          "contrast": 1.05,
+          "saturation": 1.08,
+          "cast": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "jpeg_quality": 90,
+          "vignette": 0.12
+        }
+      },
       "video": null
     },
     {
-      "id": "sony_dsc_p100", "name": "Sony Cyber-shot DSC-P100 (2005, 5.1 MP CCD)", "category": "dijital kamera", "year": 2005,
-      "spec_source": "kaynaklı (Icecat): 2592x1944, 1/1.8\" CCD, 5.1 MP", "look_source": "tahmini",
-      "photo": { "width": 2592, "height": 1944, "format": "jpg",
-        "look": { "blur": 0.8, "sharpen": 0.5, "noise_luma": 3, "noise_chroma": 2, "contrast": 1.08, "saturation": 1.12, "gamma": 0.97, "cast": [0.99, 1.0, 1.03], "jpeg_quality": 88, "bloom": 0.15, "vignette": 0.1 } },
-      "video": { "default": 0, "modes": [
-        { "label": "640x480 30fps (AVI MJPEG)", "width": 640, "height": 480, "fps": 30, "codec": "mjpeg", "container": "avi", "video_kbps": 6000,
-          "audio": { "rate": 16000, "channels": 1, "kbps": 0, "pcm": true } } ],
-        "look": { "blur": 0.7, "noise": 5, "contrast": 1.08, "saturation": 1.12, "gamma": 0.97, "cast": [0.99, 1.0, 1.03] } }
+      "id": "sony_dsc_p100",
+      "name": "Sony Cyber-shot DSC-P100 (2005, 5.1 MP CCD)",
+      "category": "dijital kamera",
+      "year": 2005,
+      "spec_source": "kaynaklı (Icecat): 2592x1944, 1/1.8\" CCD, 5.1 MP",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 2592,
+        "height": 1944,
+        "format": "jpg",
+        "look": {
+          "blur": 0.8,
+          "sharpen": 0.5,
+          "noise_luma": 3,
+          "noise_chroma": 2,
+          "contrast": 1.08,
+          "saturation": 1.12,
+          "gamma": 0.97,
+          "cast": [
+            0.99,
+            1.0,
+            1.03
+          ],
+          "jpeg_quality": 88,
+          "bloom": 0.15,
+          "vignette": 0.1
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "640x480 30fps (AVI MJPEG)",
+            "width": 640,
+            "height": 480,
+            "fps": 30,
+            "codec": "mjpeg",
+            "container": "avi",
+            "video_kbps": 6000,
+            "audio": {
+              "rate": 16000,
+              "channels": 1,
+              "kbps": 0,
+              "pcm": true
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.7,
+          "noise": 5,
+          "contrast": 1.08,
+          "saturation": 1.12,
+          "gamma": 0.97,
+          "cast": [
+            0.99,
+            1.0,
+            1.03
+          ]
+        }
+      }
     },
     {
-      "id": "canon_ixus_2005", "name": "Canon IXUS (2005, 5 MP CCD)", "category": "dijital kamera", "year": 2005,
-      "spec_source": "kaynaklı (DigiCamFX): 1/2.5\" CCD, 5.0 MP; video tahmini", "look_source": "tahmini",
-      "photo": { "width": 2592, "height": 1944, "format": "jpg",
-        "look": { "blur": 0.8, "sharpen": 0.4, "noise_luma": 3, "noise_chroma": 2, "contrast": 1.03, "saturation": 1.05, "gamma": 1.02, "cast": [1.04, 1.01, 0.96], "jpeg_quality": 88, "vignette": 0.1 } },
-      "video": { "default": 0, "modes": [
-        { "label": "640x480 30fps (AVI MJPEG)", "width": 640, "height": 480, "fps": 30, "codec": "mjpeg", "container": "avi", "video_kbps": 6000,
-          "audio": { "rate": 11025, "channels": 1, "kbps": 0, "pcm": true } },
-        { "label": "320x240 30fps (AVI MJPEG)", "width": 320, "height": 240, "fps": 30, "codec": "mjpeg", "container": "avi", "video_kbps": 3000,
-          "audio": { "rate": 11025, "channels": 1, "kbps": 0, "pcm": true } } ],
-        "look": { "blur": 0.7, "noise": 5, "contrast": 1.03, "saturation": 1.05, "gamma": 1.02, "cast": [1.04, 1.01, 0.96] } }
+      "id": "canon_ixus_2005",
+      "name": "Canon IXUS (2005, 5 MP CCD)",
+      "category": "dijital kamera",
+      "year": 2005,
+      "spec_source": "kaynaklı (DigiCamFX): 1/2.5\" CCD, 5.0 MP; video tahmini",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 2592,
+        "height": 1944,
+        "format": "jpg",
+        "look": {
+          "blur": 0.8,
+          "sharpen": 0.4,
+          "noise_luma": 3,
+          "noise_chroma": 2,
+          "contrast": 1.03,
+          "saturation": 1.05,
+          "gamma": 1.02,
+          "cast": [
+            1.04,
+            1.01,
+            0.96
+          ],
+          "jpeg_quality": 88,
+          "vignette": 0.1
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "640x480 30fps (AVI MJPEG)",
+            "width": 640,
+            "height": 480,
+            "fps": 30,
+            "codec": "mjpeg",
+            "container": "avi",
+            "video_kbps": 6000,
+            "audio": {
+              "rate": 11025,
+              "channels": 1,
+              "kbps": 0,
+              "pcm": true
+            }
+          },
+          {
+            "label": "320x240 30fps (AVI MJPEG)",
+            "width": 320,
+            "height": 240,
+            "fps": 30,
+            "codec": "mjpeg",
+            "container": "avi",
+            "video_kbps": 3000,
+            "audio": {
+              "rate": 11025,
+              "channels": 1,
+              "kbps": 0,
+              "pcm": true
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.7,
+          "noise": 5,
+          "contrast": 1.03,
+          "saturation": 1.05,
+          "gamma": 1.02,
+          "cast": [
+            1.04,
+            1.01,
+            0.96
+          ]
+        }
+      }
     },
     {
-      "id": "kodak_m420", "name": "Kodak EasyShare M420 (2008, 10.3 MP CCD)", "category": "dijital kamera", "year": 2008,
-      "spec_source": "kaynaklı (Icecat): 10.3 MP, 1/2.3\" CCD, video 640x480", "look_source": "tahmini",
-      "photo": { "width": 3664, "height": 2748, "format": "jpg",
-        "look": { "blur": 1.2, "sharpen": 0.7, "noise_luma": 5, "noise_chroma": 3, "contrast": 1.1, "saturation": 1.15, "gamma": 0.96, "cast": [1.0, 1.0, 0.98], "jpeg_quality": 88, "bloom": 0.2 } },
-      "video": { "default": 0, "modes": [
-        { "label": "640x480 30fps (MP4)", "width": 640, "height": 480, "fps": 30, "codec": "h264", "container": "mp4", "video_kbps": 3000,
-          "audio": { "rate": 22050, "channels": 1, "kbps": 48 } } ],
-        "look": { "blur": 0.7, "noise": 6, "contrast": 1.1, "saturation": 1.15, "gamma": 0.96 } }
+      "id": "kodak_m420",
+      "name": "Kodak EasyShare M420 (2008, 10.3 MP CCD)",
+      "category": "dijital kamera",
+      "year": 2008,
+      "spec_source": "kaynaklı (Icecat): 10.3 MP, 1/2.3\" CCD, video 640x480",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 3664,
+        "height": 2748,
+        "format": "jpg",
+        "look": {
+          "blur": 1.2,
+          "sharpen": 0.7,
+          "noise_luma": 5,
+          "noise_chroma": 3,
+          "contrast": 1.1,
+          "saturation": 1.15,
+          "gamma": 0.96,
+          "cast": [
+            1.0,
+            1.0,
+            0.98
+          ],
+          "jpeg_quality": 88,
+          "bloom": 0.2
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "640x480 30fps (MP4)",
+            "width": 640,
+            "height": 480,
+            "fps": 30,
+            "codec": "h264",
+            "container": "mp4",
+            "video_kbps": 3000,
+            "audio": {
+              "rate": 22050,
+              "channels": 1,
+              "kbps": 48
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.7,
+          "noise": 6,
+          "contrast": 1.1,
+          "saturation": 1.15,
+          "gamma": 0.96
+        }
+      }
     },
     {
-      "id": "vhs_kamkorder", "name": "VHS kamkorder (1980'ler-90'lar)", "category": "kamkorder", "year": 1988,
-      "spec_source": "tahmini (genel VHS: ~240 çizgi yatay çözünürlük, 4:3, analog)", "look_source": "tahmini",
-      "photo": { "width": 640, "height": 480, "format": "jpg",
-        "look": { "blur": 1.6, "sharpen": 0.0, "noise_luma": 9, "noise_chroma": 7, "contrast": 0.9, "saturation": 0.8, "gamma": 1.1, "cast": [1.06, 1.0, 0.9], "jpeg_quality": 70, "banding": 0.3, "bloom": 0.25, "vignette": 0.2 } },
-      "video": { "default": 0, "modes": [
-        { "label": "640x480 30fps (MP4)", "width": 640, "height": 480, "fps": 30, "codec": "h264", "container": "mp4", "video_kbps": 1200,
-          "audio": { "rate": 22050, "channels": 1, "kbps": 48 } } ],
-        "look": { "blur": 1.3, "sharpen": 0.0, "noise": 14, "contrast": 0.9, "saturation": 0.8, "gamma": 1.1, "cast": [1.06, 1.0, 0.9], "vignette": 0.2, "chroma_bleed": 5, "prescale": [320, 240] } }
+      "id": "vhs_kamkorder",
+      "name": "VHS kamkorder (1980'ler-90'lar)",
+      "category": "kamkorder",
+      "year": 1988,
+      "spec_source": "tahmini (genel VHS: ~240 çizgi yatay çözünürlük, 4:3, analog)",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 640,
+        "height": 480,
+        "format": "jpg",
+        "look": {
+          "blur": 1.6,
+          "sharpen": 0.0,
+          "noise_luma": 9,
+          "noise_chroma": 7,
+          "contrast": 0.9,
+          "saturation": 0.8,
+          "gamma": 1.1,
+          "cast": [
+            1.06,
+            1.0,
+            0.9
+          ],
+          "jpeg_quality": 70,
+          "banding": 0.3,
+          "bloom": 0.25,
+          "vignette": 0.2
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "640x480 30fps (MP4)",
+            "width": 640,
+            "height": 480,
+            "fps": 30,
+            "codec": "h264",
+            "container": "mp4",
+            "video_kbps": 1200,
+            "audio": {
+              "rate": 22050,
+              "channels": 1,
+              "kbps": 48
+            }
+          }
+        ],
+        "look": {
+          "blur": 1.3,
+          "sharpen": 0.0,
+          "noise": 14,
+          "contrast": 0.9,
+          "saturation": 0.8,
+          "gamma": 1.1,
+          "cast": [
+            1.06,
+            1.0,
+            0.9
+          ],
+          "vignette": 0.2,
+          "chroma_bleed": 5,
+          "prescale": [
+            320,
+            240
+          ]
+        }
+      },
+      "note": "80'ler ve 90'ların ev videoları"
     },
     {
-      "id": "hi8_kamkorder", "name": "Hi8 kamkorder (1990'lar)", "category": "kamkorder", "year": 1995,
-      "spec_source": "tahmini (genel Hi8: ~400 çizgi, 4:3, analog)", "look_source": "tahmini",
-      "photo": { "width": 640, "height": 480, "format": "jpg",
-        "look": { "blur": 1.1, "sharpen": 0.1, "noise_luma": 6, "noise_chroma": 5, "contrast": 0.95, "saturation": 0.92, "gamma": 1.05, "cast": [1.03, 1.0, 0.95], "jpeg_quality": 78, "bloom": 0.15, "vignette": 0.15 } },
-      "video": { "default": 0, "modes": [
-        { "label": "640x480 30fps (MP4)", "width": 640, "height": 480, "fps": 30, "codec": "h264", "container": "mp4", "video_kbps": 1800,
-          "audio": { "rate": 32000, "channels": 2, "kbps": 64 } } ],
-        "look": { "blur": 0.9, "sharpen": 0.1, "noise": 9, "contrast": 0.95, "saturation": 0.92, "gamma": 1.05, "cast": [1.03, 1.0, 0.95], "vignette": 0.15, "chroma_bleed": 2, "prescale": [480, 360] } }
+      "id": "hi8_kamkorder",
+      "name": "Hi8 kamkorder (1990'lar)",
+      "category": "kamkorder",
+      "year": 1995,
+      "spec_source": "tahmini (genel Hi8: ~400 çizgi, 4:3, analog)",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 640,
+        "height": 480,
+        "format": "jpg",
+        "look": {
+          "blur": 1.1,
+          "sharpen": 0.1,
+          "noise_luma": 6,
+          "noise_chroma": 5,
+          "contrast": 0.95,
+          "saturation": 0.92,
+          "gamma": 1.05,
+          "cast": [
+            1.03,
+            1.0,
+            0.95
+          ],
+          "jpeg_quality": 78,
+          "bloom": 0.15,
+          "vignette": 0.15
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "640x480 30fps (MP4)",
+            "width": 640,
+            "height": 480,
+            "fps": 30,
+            "codec": "h264",
+            "container": "mp4",
+            "video_kbps": 1800,
+            "audio": {
+              "rate": 32000,
+              "channels": 2,
+              "kbps": 64
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.9,
+          "sharpen": 0.1,
+          "noise": 9,
+          "contrast": 0.95,
+          "saturation": 0.92,
+          "gamma": 1.05,
+          "cast": [
+            1.03,
+            1.0,
+            0.95
+          ],
+          "vignette": 0.15,
+          "chroma_bleed": 2,
+          "prescale": [
+            480,
+            360
+          ]
+        }
+      },
+      "note": "90'ların Hi8 kamkorderleri"
     },
     {
-      "id": "minidv_kamkorder", "name": "MiniDV kamkorder (2000'ler)", "category": "kamkorder", "year": 2002,
-      "spec_source": "tahmini (genel MiniDV: 720x480 (NTSC) / 720x576 (PAL) DV25, ~25 Mbps)", "look_source": "tahmini",
-      "photo": { "width": 720, "height": 480, "format": "jpg",
-        "look": { "blur": 0.7, "sharpen": 0.25, "noise_luma": 3.5, "noise_chroma": 2.5, "contrast": 1.02, "saturation": 1.02, "cast": [1.0, 1.0, 1.0], "jpeg_quality": 86, "vignette": 0.1 } },
-      "video": { "default": 0, "modes": [
-        { "label": "720x480 30fps (MP4)", "width": 720, "height": 480, "fps": 30, "codec": "h264", "container": "mp4", "video_kbps": 6000,
-          "audio": { "rate": 48000, "channels": 2, "kbps": 128 } } ],
-        "look": { "blur": 0.6, "sharpen": 0.2, "noise": 4, "contrast": 1.02, "saturation": 1.02, "vignette": 0.1 } }
+      "id": "minidv_kamkorder",
+      "name": "MiniDV kamkorder (2000'ler)",
+      "category": "kamkorder",
+      "year": 2002,
+      "spec_source": "tahmini (genel MiniDV: 720x480 (NTSC) / 720x576 (PAL) DV25, ~25 Mbps)",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 720,
+        "height": 480,
+        "format": "jpg",
+        "look": {
+          "blur": 0.7,
+          "sharpen": 0.25,
+          "noise_luma": 3.5,
+          "noise_chroma": 2.5,
+          "contrast": 1.02,
+          "saturation": 1.02,
+          "cast": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "jpeg_quality": 86,
+          "vignette": 0.1
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "720x480 30fps (MP4)",
+            "width": 720,
+            "height": 480,
+            "fps": 30,
+            "codec": "h264",
+            "container": "mp4",
+            "video_kbps": 6000,
+            "audio": {
+              "rate": 48000,
+              "channels": 2,
+              "kbps": 128
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.6,
+          "sharpen": 0.2,
+          "noise": 4,
+          "contrast": 1.02,
+          "saturation": 1.02,
+          "vignette": 0.1
+        }
+      },
+      "note": "2000'lerin MiniDV kamkorderleri"
+    },
+    {
+      "id": "casio_qv10",
+      "name": "Casio QV-10 (1995)",
+      "category": "dijital kamera",
+      "year": 1995,
+      "note": "İlk LCD ekranlı tüketici dijital kamerası",
+      "spec_source": "kaynaklı: 320x240, 0.25 MP 1/5\" CCD (Digital Kamera Museum); video yok",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 320,
+        "height": 240,
+        "format": "jpg",
+        "look": {
+          "blur": 1.0,
+          "sharpen": 0.1,
+          "noise_luma": 6,
+          "noise_chroma": 4,
+          "contrast": 0.95,
+          "saturation": 0.85,
+          "gamma": 1.1,
+          "cast": [
+            1.02,
+            1.0,
+            0.94
+          ],
+          "vignette": 0.2,
+          "jpeg_quality": 55,
+          "bayer": true
+        }
+      },
+      "video": null
+    },
+    {
+      "id": "nintendo_gb_camera",
+      "name": "Game Boy Camera (1998)",
+      "category": "oyun konsolu",
+      "year": 1998,
+      "note": "128x112, sadece 4 gri/yeşil ton",
+      "spec_source": "kaynaklı: 128x112, 4 ton (2 bit) siyah-beyaz CMOS sensör (Wikipedia, Cameralabs); video yok",
+      "look_source": "tahmini (ton ve titreşim ayarı)",
+      "photo": {
+        "width": 128,
+        "height": 112,
+        "scale": 4,
+        "format": "png",
+        "look": {
+          "blur": 0.5,
+          "sharpen": 0.9,
+          "noise_luma": 4,
+          "noise_chroma": 0,
+          "contrast": 1.25,
+          "saturation": 0.0,
+          "gamma": 1.0,
+          "cast": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "vignette": 0.0,
+          "jpeg_quality": 100,
+          "levels": 4,
+          "palette": 1
+        }
+      },
+      "video": null
+    },
+    {
+      "id": "sony_mavica_fd",
+      "name": "Sony Digital Mavica FD (1997-99)",
+      "category": "dijital kamera",
+      "year": 1997,
+      "note": "Disketle çalışan Mavica serisi",
+      "spec_source": "kaynaklı: 1/4\" CCD, 640x480 (FD Mavica serisi, DPReview); video eklenmedi",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 640,
+        "height": 480,
+        "format": "jpg",
+        "look": {
+          "blur": 0.9,
+          "sharpen": 0.2,
+          "noise_luma": 4.5,
+          "noise_chroma": 3,
+          "contrast": 1.02,
+          "saturation": 0.95,
+          "gamma": 1.05,
+          "cast": [
+            1.01,
+            1.0,
+            0.97
+          ],
+          "jpeg_quality": 70,
+          "vignette": 0.1
+        }
+      },
+      "video": null
+    },
+    {
+      "id": "sharp_jsh04",
+      "name": "Sharp J-SH04 (2000)",
+      "category": "telefon",
+      "year": 2000,
+      "note": "Dünyanın ilk kameralı telefonu (Japonya, Kasım 2000)",
+      "spec_source": "kaynaklı: 110.000 piksel CMOS (Wikipedia, SoftBank); foto boyutu tahmini; video yok",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 352,
+        "height": 288,
+        "format": "jpg",
+        "look": {
+          "blur": 1.5,
+          "sharpen": 0.0,
+          "noise_luma": 9,
+          "noise_chroma": 7,
+          "contrast": 0.9,
+          "saturation": 0.8,
+          "gamma": 1.12,
+          "cast": [
+            1.04,
+            1.0,
+            0.92
+          ],
+          "jpeg_quality": 45,
+          "bayer": true,
+          "banding": 0.2,
+          "hot_pixels": 6
+        }
+      },
+      "video": null
+    },
+    {
+      "id": "nokia_7650",
+      "name": "Nokia 7650 (2002)",
+      "category": "telefon",
+      "year": 2002,
+      "note": "Nokia'nın ilk kameralı telefonu (Symbian)",
+      "spec_source": "kaynaklı: 0.3 MP, 640x480 (Mobilissimo); video modu eklenmedi",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 640,
+        "height": 480,
+        "format": "jpg",
+        "look": {
+          "blur": 1.0,
+          "sharpen": 0.1,
+          "noise_luma": 7,
+          "noise_chroma": 5,
+          "contrast": 0.94,
+          "saturation": 0.88,
+          "gamma": 1.1,
+          "cast": [
+            1.03,
+            1.0,
+            0.94
+          ],
+          "jpeg_quality": 58,
+          "bayer": true,
+          "banding": 0.12,
+          "hot_pixels": 5
+        }
+      },
+      "video": null
+    },
+    {
+      "id": "motorola_razr_v3",
+      "name": "Motorola RAZR V3 (2004)",
+      "category": "telefon",
+      "year": 2004,
+      "note": "2000'lerin ikonik kapaklı telefonu",
+      "spec_source": "kaynaklı: VGA kamera, video 15 fps (GSMArena, PhoneScoop); video çözünürlüğü ve codec tahmini",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 640,
+        "height": 480,
+        "format": "jpg",
+        "look": {
+          "blur": 0.9,
+          "sharpen": 0.15,
+          "noise_luma": 6,
+          "noise_chroma": 4,
+          "contrast": 0.97,
+          "saturation": 0.92,
+          "gamma": 1.08,
+          "cast": [
+            1.02,
+            1.0,
+            0.95
+          ],
+          "jpeg_quality": 62,
+          "bayer": true,
+          "hot_pixels": 4
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "176x144 15fps (3GP)",
+            "width": 176,
+            "height": 144,
+            "fps": 15,
+            "codec": "mpeg4",
+            "container": "3gp",
+            "video_kbps": 128,
+            "audio": {
+              "rate": 8000,
+              "channels": 1,
+              "kbps": 12
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.7,
+          "noise": 7,
+          "contrast": 0.97,
+          "saturation": 0.92,
+          "gamma": 1.08,
+          "cast": [
+            1.02,
+            1.0,
+            0.95
+          ]
+        }
+      }
+    },
+    {
+      "id": "flip_ultra",
+      "name": "Flip Video Ultra (2007)",
+      "category": "kamkorder",
+      "year": 2007,
+      "note": "2000'lerin sonunun cep kamkorderi",
+      "spec_source": "kaynaklı: 640x480, 30 fps, H.264 (Newegg, UVM, Macwelt); foto kare yakalama olarak eklendi",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 640,
+        "height": 480,
+        "format": "jpg",
+        "look": {
+          "blur": 0.9,
+          "sharpen": 0.2,
+          "noise_luma": 5,
+          "noise_chroma": 3,
+          "contrast": 1.03,
+          "saturation": 1.05,
+          "cast": [
+            1.0,
+            1.0,
+            0.98
+          ],
+          "jpeg_quality": 70
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "640x480 30fps (MP4)",
+            "width": 640,
+            "height": 480,
+            "fps": 30,
+            "codec": "h264",
+            "container": "mp4",
+            "video_kbps": 1200,
+            "audio": {
+              "rate": 16000,
+              "channels": 1,
+              "kbps": 32
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.8,
+          "noise": 5,
+          "contrast": 1.03,
+          "saturation": 1.05,
+          "cast": [
+            1.0,
+            1.0,
+            0.98
+          ]
+        }
+      }
+    },
+    {
+      "id": "iphone_3gs",
+      "name": "iPhone 3GS (2009)",
+      "category": "telefon",
+      "year": 2009,
+      "note": "İlk iPhone'da video kaydı (VGA)",
+      "spec_source": "kaynaklı: 3 MP, video VGA 640x480 30 fps (Apple, Wikipedia); bit hızı ve foto boyutu tahmini",
+      "look_source": "tahmini",
+      "photo": {
+        "width": 2048,
+        "height": 1536,
+        "format": "jpg",
+        "look": {
+          "blur": 1.0,
+          "sharpen": 0.55,
+          "noise_luma": 3.5,
+          "noise_chroma": 2.5,
+          "contrast": 1.05,
+          "saturation": 1.1,
+          "gamma": 0.99,
+          "cast": [
+            1.0,
+            1.0,
+            0.98
+          ],
+          "jpeg_quality": 86,
+          "vignette": 0.1
+        }
+      },
+      "video": {
+        "default": 0,
+        "modes": [
+          {
+            "label": "640x480 30fps (MP4)",
+            "width": 640,
+            "height": 480,
+            "fps": 30,
+            "codec": "h264",
+            "container": "mp4",
+            "video_kbps": 2500,
+            "audio": {
+              "rate": 44100,
+              "channels": 1,
+              "kbps": 64
+            }
+          }
+        ],
+        "look": {
+          "blur": 0.7,
+          "noise": 4,
+          "contrast": 1.05,
+          "saturation": 1.1,
+          "gamma": 0.99,
+          "cast": [
+            1.0,
+            1.0,
+            0.98
+          ]
+        }
+      }
     }
   ]
 }

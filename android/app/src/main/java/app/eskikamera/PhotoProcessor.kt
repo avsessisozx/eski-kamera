@@ -75,7 +75,12 @@ object PhotoProcessor {
         val t0 = System.currentTimeMillis()
         val out = LookProcessor.processPhoto(px, tw, th, device.photoLook, seed)
         scaled.setPixels(out, 0, tw, 0, 0, tw, th)
-        FileOutputStream(outFile).use { scaled.compress(Bitmap.CompressFormat.JPEG, device.photoLook.jpegQuality, it) }
+        val finalBmp = if (device.photoScale > 1) Bitmap.createScaledBitmap(scaled, tw * device.photoScale, th * device.photoScale, false) else scaled
+        FileOutputStream(outFile).use {
+            if (device.photoFormat == "png") finalBmp.compress(Bitmap.CompressFormat.PNG, 100, it)
+            else finalBmp.compress(Bitmap.CompressFormat.JPEG, device.photoLook.jpegQuality, it)
+        }
+        if (finalBmp !== scaled) finalBmp.recycle()
         scaled.recycle()
         val info = "${device.name}: ${tw}x$th foto, JPEG kalite ${device.photoLook.jpegQuality}, ${System.currentTimeMillis() - t0} ms"
         log(info)

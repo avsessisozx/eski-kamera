@@ -1,7 +1,7 @@
 package app.eskikamera
 
 /** Fotoğraf ve video için ortak görünüm parametreleri. */
-class Look(
+data class Look(
     val blur: Float,
     val sharpen: Float,
     val noiseLuma: Float,
@@ -16,7 +16,9 @@ class Look(
     val bayer: Boolean,
     val hotPixels: Int,
     val chromaBleed: Int,
-    val jpegQuality: Int
+    val jpegQuality: Int,
+    val levels: Int = 0,
+    val palette: Int = 0
 )
 
 class AudioSpec(val rate: Int, val channels: Int, val kbps: Int, val pcm: Boolean)
@@ -45,9 +47,21 @@ class Device(
     val modes: List<VideoMode>,
     val defaultMode: Int,
     val videoLook: Look?,
-    val videoPrescale: IntArray?
+    val videoPrescale: IntArray?,
+    val note: String = "",
+    val photoScale: Int = 1,
+    val photoFormat: String = "jpg"
 ) {
     val hasVideo: Boolean get() = modes.isNotEmpty()
+
+    /** Dönem grubu (cihaz seçicide başlık). */
+    val era: String
+        get() = when {
+            year <= 1999 -> "1990'lar"
+            year <= 2004 -> "2000-2004"
+            year <= 2008 -> "2005-2008"
+            else -> "2009 ve sonrası"
+        }
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -87,7 +101,8 @@ object Profiles {
         contrast = m.f("contrast"), saturation = m.f("saturation"), gamma = m.f("gamma"),
         cast = castOf(m), vignette = m.f("vignette"), bloom = m.f("bloom"),
         bayer = m["bayer"] as Boolean, hotPixels = m.i("hot_pixels"), chromaBleed = 0,
-        jpegQuality = m.i("jpeg_quality")
+        jpegQuality = m.i("jpeg_quality"),
+        levels = (m["levels"] as Number?)?.toInt() ?: 0, palette = (m["palette"] as Number?)?.toInt() ?: 0
     )
 
     private fun videoLook(m: Map<String, Any?>): Look {
@@ -129,7 +144,10 @@ object Profiles {
             id = d.s("id"), name = d.s("name"), category = d.s("category"), year = d.i("year"),
             specSource = d.s("spec_source"), lookSource = d.s("look_source"),
             photoWidth = photo.i("width"), photoHeight = photo.i("height"), photoLook = photoLook,
-            modes = modes, defaultMode = defaultMode, videoLook = vLook, videoPrescale = prescale
+            modes = modes, defaultMode = defaultMode, videoLook = vLook, videoPrescale = prescale,
+            note = (d["note"] as String?) ?: "",
+            photoScale = (photo["scale"] as Number?)?.toInt() ?: 1,
+            photoFormat = (photo["format"] as String?) ?: "jpg"
         )
     }
 }

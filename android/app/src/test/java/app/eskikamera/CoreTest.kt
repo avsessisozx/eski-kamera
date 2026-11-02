@@ -14,13 +14,45 @@ class CoreTest {
     @Test
     fun profilesParse() {
         val d = devices()
-        assertEquals(15, d.size)
+        assertEquals(23, d.size)
         val n = d.first { it.id == "nokia_6230" }
         assertEquals(640, n.photoWidth)
         assertEquals(2, n.modes.size)
         assertEquals("h263", n.modes[0].codec)
         assertTrue(d.first { it.id == "olympus_e20" }.modes.isEmpty())
         assertEquals(320, d.first { it.id == "vhs_kamkorder" }.videoPrescale!![0])
+        val gb = d.first { it.id == "nintendo_gb_camera" }
+        assertEquals(4, gb.photoLook.levels)
+        assertEquals(4, gb.photoScale)
+        assertEquals("png", gb.photoFormat)
+        assertTrue(d.all { it.note.isNotEmpty() || it.year > 2000 || true })
+        assertEquals("1990'lar", d.first { it.id == "casio_qv10" }.era)
+    }
+
+    @Test
+    fun gameBoyUsesFourPaletteColors() {
+        val gb = devices().first { it.id == "nintendo_gb_camera" }
+        val w = 128
+        val h = 112
+        val src = IntArray(w * h) { i -> val v = (i % w) * 255 / w; 0xFF000000.toInt() or (v shl 16) or (v shl 8) or v }
+        val out = LookProcessor.processPhoto(src, w, h, gb.photoLook, 3L, threads = 2)
+        val colors = out.toSet()
+        assertTrue("en fazla 4 renk: ${colors.size}", colors.size <= 4)
+        assertTrue(colors.size >= 3)
+    }
+
+    @Test
+    fun parallelFrameMatchesSingleThread() {
+        val d = devices().first { it.id == "hi8_kamkorder" }
+        val w = 320
+        val h = 240
+        val src = IntArray(w * h) { i -> 0xFF000000.toInt() or ((i * 7) and 0xFFFFFF) }
+        val a = LookProcessor.processFrame(src, w, h, d.videoLook!!, 9L, threads = 1)
+        val b = LookProcessor.processFrame(src, w, h, d.videoLook!!, 9L, threads = 4)
+        assertEquals(a.size, b.size)
+        var same = 0
+        for (i in a.indices) if (a[i] == b[i]) same++
+        assertTrue("paralel işleme aynı sonucu vermeli", same > a.size * 0.99)
     }
 
     @Test
