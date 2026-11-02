@@ -158,6 +158,8 @@ class MainActivity : AppCompatActivity() {
         if (devices.isNotEmpty()) refreshModes()
     }
 
+    internal fun deviceCountForTest(): Int = devices.size
+
     private fun currentDevice(): Device = devices[deviceSpinner.selectedItemPosition.coerceAtLeast(0)]
 
     private fun currentMode(d: Device): VideoMode? =
@@ -237,7 +239,7 @@ class MainActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun takePhoto() {
+    internal fun takePhoto() {
         val ic = imageCapture
         if (ic == null) { say("Kamera hazır değil."); return }
         if (busy) return
@@ -260,7 +262,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     @SuppressLint("MissingPermission")
-    private fun toggleVideo() {
+    internal fun toggleVideo() {
         val active = recording
         if (active != null) {
             active.stop()
