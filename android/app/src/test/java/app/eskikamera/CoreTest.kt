@@ -116,7 +116,8 @@ class CoreTest {
         val flir = d.first { it.id == "flir_one" }
         assertEquals(80, flir.modes[0].procW)
         assertEquals(2, flir.videoLook!!.palette)
-        assertTrue(d.first { it.id == "ps_eye" }.modes.all { it.fps <= 30 })
+        assertTrue(d.first { it.id == "ps_eye" }.modes.any { it.fps == 120 })
+        assertEquals(30, d.first { it.id == "ps_eye" }.modes[d.first { it.id == "ps_eye" }.defaultMode].fps)
     }
 
     @Test
