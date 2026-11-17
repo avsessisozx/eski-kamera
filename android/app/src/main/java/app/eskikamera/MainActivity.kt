@@ -422,7 +422,8 @@ class MainActivity : AppCompatActivity() {
         val videoish = previewIsVideo() && m != null
         modeChip.visibility = if (videoish) View.VISIBLE else View.GONE
         modeChip.text = (m?.label ?: "") + "  ▾"
-        val vtxt = if (m != null) "Video ${m.width}x${m.height} ${m.fps}fps" else "video yok"
+        val om = outMode(d)
+        val vtxt = if (m != null) "Video ${m.width}x${m.height} ${m.fps}fps" + (if (om != null && om.width != m.width) " (izleme ${om.width}x${om.height})" else "") else "video yok"
         specLine.text = "${d.era} · Foto ${d.photoWidth}x${d.photoHeight} · $vtxt" + if (d.note.isNotEmpty()) "\n${d.note}" else ""
         val on = 0xFFFFFFFF.toInt()
         val off = 0xFFAAAAAA.toInt()
