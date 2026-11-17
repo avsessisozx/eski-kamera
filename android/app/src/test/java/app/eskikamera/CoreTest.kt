@@ -194,6 +194,22 @@ class CoreTest {
         val e = m.smoothExport()
         val big = FramePipeline.process(yuv, e, look, d.videoPrescale, 1L)
         assertEquals(e.width * e.height, big.size)
+        val vhs = devices().first { it.id == "vhs_kamkorder" }
+        val vm = vhs.modes[0]
+        val v = FramePipeline.process(yuv, vm, vhs.videoLook!!, vhs.videoPrescale, 1L)
+        assertEquals(vm.width * vm.height, v.size)
+    }
+
+    @Test
+    fun chromaBleedShiftsColorButKeepsEdgesInRange() {
+        val w = 40
+        val h = 6
+        val src = IntArray(w * h) { i -> if ((i % w) < 20) 0xFFFF2020.toInt() else 0xFF2020FF.toInt() }
+        val vhs = devices().first { it.id == "vhs_kamkorder" }.videoLook!!
+        val out = LookProcessor.processFrame(src, w, h, vhs.copy(noiseLuma = 0f, noiseChroma = 0f, vignette = 0f, bloom = 0f), 1L, threads = 1)
+        assertEquals(src.size, out.size)
+        assertTrue("renkler geçerli aralıkta", out.all { (it ushr 24) == 0xFF })
+        assertTrue("kenarda renk taşması olmalı", out[19] != out[0] || out[20] != out[w - 1])
     }
 
     @Test

@@ -123,7 +123,7 @@ object LookProcessor {
             blur(r, w, bh, look.blur, tmp); blur(g, w, bh, look.blur, tmp); blur(b, w, bh, look.blur, tmp)
         }
         lap(1)
-        if (look.chromaSoft > 0.3f) chromaSoften(r, g, b, w, bh, look.chromaSoft, tmp)
+        if (look.chromaSoft > 0.3f && look.chromaBleed == 0) chromaSoften(r, g, b, w, bh, look.chromaSoft, tmp)
         if (look.chromaBleed > 0) chromaBleed(r, g, b, w, bh, look.chromaBleed)
         lap(2)
 
@@ -363,7 +363,7 @@ object LookProcessor {
         val l = FloatArray(n) { 0.299f * r[it] + 0.587f * g[it] + 0.114f * b[it] }
         val dr = FloatArray(n) { r[it] - l[it] }
         val db = FloatArray(n) { b[it] - l[it] }
-        blur(dr, w, h, sigma * 1.8f, tmp); blur(db, w, h, sigma * 1.8f, tmp)
+        boxBlur3(dr, w, h, sigma * 1.8f, tmp); boxBlur3(db, w, h, sigma * 1.8f, tmp)
         for (i in 0 until n) {
             // parlaklık sabit kaldığı için yeşil fark, kırmızı ve mavi farktan doğrudan çıkar
             val dg = -(0.299f * dr[i] + 0.114f * db[i]) / 0.587f
@@ -374,23 +374,36 @@ object LookProcessor {
     // ------------------------------------------------------------ analog renk taşması (VHS/Hi8)
     private fun chromaBleed(r: FloatArray, g: FloatArray, b: FloatArray, w: Int, h: Int, bleed: Int) {
         val rad = max(1, (bleed * 0.8f).toInt())
-        val cbRow = FloatArray(w); val crRow = FloatArray(w)
+        val pad = bleed + rad
+        val cnt = (2 * rad + 1).toFloat()
+        val cbP = FloatArray(w + 2 * pad)
+        val crP = FloatArray(w + 2 * pad)
+        val cbS = FloatArray(w + 2 * pad + 1)
+        val crS = FloatArray(w + 2 * pad + 1)
         val cbOut = FloatArray(w); val crOut = FloatArray(w)
         for (y in 0 until h) {
             val o = y * w
             for (x in 0 until w) {
                 val yy = 0.299f * r[o + x] + 0.587f * g[o + x] + 0.114f * b[o + x]
-                cbRow[x] = (b[o + x] - yy) * 0.564f
-                crRow[x] = (r[o + x] - yy) * 0.713f
+                cbP[pad + x] = (b[o + x] - yy) * 0.564f
+                crP[pad + x] = (r[o + x] - yy) * 0.713f
             }
+            for (i in 0 until pad) {
+                cbP[i] = cbP[pad]; crP[i] = crP[pad]
+                cbP[pad + w + i] = cbP[pad + w - 1]; crP[pad + w + i] = crP[pad + w - 1]
+            }
+            for (i in 0 until w + 2 * pad) {
+                cbS[i + 1] = cbS[i] + cbP[i]
+                crS[i + 1] = crS[i] + crP[i]
+            }
+            // kayan toplam: eski 9-örnekli döngünün aynısı ama piksel başına sabit işlem
             for (x in 0 until w) {
-                var sb = 0f; var sr = 0f
-                val cnt = 2 * rad + 1
-                for (t in -rad..rad) {
-                    sb += cbRow[min(w - 1, max(0, x - bleed + t))]
-                    sr += crRow[min(w - 1, max(0, x + bleed + t))]
-                }
-                cbOut[x] = sb / cnt; crOut[x] = sr / cnt
+                val lo = pad + x - bleed - rad
+                val hi = pad + x - bleed + rad
+                cbOut[x] = (cbS[hi + 1] - cbS[lo]) / cnt
+                val lo2 = pad + x + bleed - rad
+                val hi2 = pad + x + bleed + rad
+                crOut[x] = (crS[hi2 + 1] - crS[lo2]) / cnt
             }
             for (x in 0 until w) {
                 val yy = 0.299f * r[o + x] + 0.587f * g[o + x] + 0.114f * b[o + x]
