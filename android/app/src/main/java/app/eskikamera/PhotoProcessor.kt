@@ -16,9 +16,19 @@ class ProcessException(msg: String, cause: Throwable? = null) : Exception(msg, c
 
 object PhotoProcessor {
     /** Fotoğrafı cihazın görünümüne dönüştürüp JPEG olarak outFile'a yazar. */
+    /** Gömülü flaş: yakın nesneler patlar, arka plan kararır, renkler solar, kenarlar sertleşir. */
+    fun flashLook(l: Look): Look = l.copy(
+        contrast = l.contrast * 1.18f,
+        gamma = l.gamma * 1.2f,
+        bloom = l.bloom + 0.18f,
+        saturation = l.saturation * 0.88f,
+        vignette = l.vignette + 0.22f,
+        sharpen = l.sharpen + 0.1f
+    )
+
     fun process(
         context: Context, src: Uri, device: Device, seed: Long, outFile: File,
-        overlay: OverlayConfig? = null, overlayData: OverlayData? = null, log: (String) -> Unit
+        overlay: OverlayConfig? = null, overlayData: OverlayData? = null, flash: Boolean = false, log: (String) -> Unit
     ): String {
         val resolver = context.contentResolver
         var rotation = 0
@@ -76,7 +86,8 @@ object PhotoProcessor {
         val px = IntArray(tw * th)
         scaled.getPixels(px, 0, tw, 0, 0, tw, th)
         val t0 = System.currentTimeMillis()
-        val out = LookProcessor.processPhoto(px, tw, th, device.photoLook, seed)
+        val look = if (flash) flashLook(device.photoLook) else device.photoLook
+        val out = LookProcessor.processPhoto(px, tw, th, look, seed)
         if (overlay != null && overlay.any) Overlay.drawOn(out, tw, th, overlay, overlayData ?: OverlayData())
         scaled.setPixels(out, 0, tw, 0, 0, tw, th)
         val finalBmp = if (device.photoScale > 1) Bitmap.createScaledBitmap(scaled, tw * device.photoScale, th * device.photoScale, false) else scaled

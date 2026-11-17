@@ -35,6 +35,12 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.camera2.interop.Camera2CameraInfo
+import androidx.camera.camera2.interop.Camera2Interop
+import androidx.camera.camera2.interop.ExperimentalCamera2Interop
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CaptureRequest
+import android.util.Range
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.FocusMeteringAction
@@ -72,6 +78,7 @@ class MainActivity : AppCompatActivity() {
     @Volatile private var cap = Cap.PHOTO
 
     private lateinit var previewImage: ImageView
+    private lateinit var skinView: SkinView
     private lateinit var deviceChip: TextView
     private lateinit var modeChip: TextView
     private lateinit var specLine: TextView
@@ -245,6 +252,8 @@ class MainActivity : AppCompatActivity() {
 
         previewImage = ImageView(this).apply { scaleType = ImageView.ScaleType.FIT_CENTER }
         root.addView(previewImage, FrameLayout.LayoutParams(match, match))
+        skinView = SkinView(this).apply { isClickable = false; isFocusable = false }
+        root.addView(skinView, FrameLayout.LayoutParams(match, match))
         val scaleDetector = ScaleGestureDetector(this, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
             override fun onScale(d: ScaleGestureDetector): Boolean {
                 val cam = camera ?: return false
@@ -404,6 +413,7 @@ class MainActivity : AppCompatActivity() {
         if (!d.hasVideo && capNeedsVideo(cap)) cap = Cap.PHOTO
         if (save) settings.deviceId = d.id
         refreshUi()
+        rebindForFps()
     }
 
     private fun setCap(c: Cap) {
@@ -425,6 +435,11 @@ class MainActivity : AppCompatActivity() {
         deviceChip.setCompoundDrawables(ic, null, null, null)
         val videoish = previewIsVideo() && m != null
         modeChip.visibility = if (videoish) View.VISIBLE else View.GONE
+        val sk = Skin.of(d.icon)
+        Ui.accent = sk.accent
+        skinView.skin = sk
+        skinView.recording = liveRecorder != null
+        skinView.info = d.name + " · " + (if (m != null && previewIsVideo()) "${m.width}x${m.height}" else "${d.photoWidth}x${d.photoHeight}")
         val om = outMode(d)
         modeChip.text = ((om ?: m)?.label ?: "") + "  ▾"
         val vtxt = if (m != null) "Video ${m.width}x${m.height} ${m.fps}fps" + (if (om != null && om.width != m.width) " (izleme ${om.width}x${om.height})" else "") else "video yok"
@@ -457,6 +472,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateShutter() {
         val active = liveRecorder != null || armed
+        skinView.recording = liveRecorder != null
         val lp = shutterInner.layoutParams as FrameLayout.LayoutParams
         if (active) {
             lp.width = dp(34); lp.height = dp(34)
@@ -659,7 +675,7 @@ class MainActivity : AppCompatActivity() {
             val tv = ImageView(this)
             jobs.add(tv to { PreviewThumbs.videoThumb(sceneBitmap(), d, m, box[0], box[1]) })
             val row = pickerRow(null, m.label, "${m.width}x${m.height} · ${m.fps} fps · ${m.codec} · ${m.videoKbps} kbps", "", tv, i == modeIndex) {
-                dialog.dismiss(); modeIndex = i; refreshUi()
+                dialog.dismiss(); modeIndex = i; refreshUi(); rebindForFps()
             }
             list.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(6) })
         }
@@ -781,6 +797,27 @@ class MainActivity : AppCompatActivity() {
             .addCameraFilter { infos -> listOf(infos[idx.coerceAtMost(infos.size - 1)]) }.build()
     }
 
+    /** Yüksek kare hızlı mod seçildi/bırakıldıysa kamerayı yeniden bağlar. */
+    private var boundFps = 30
+    private fun wantedFps(): Int { val d = currentDevice(); return currentMode(d)?.fps ?: 30 }
+    private fun rebindForFps() {
+        if (liveRecorder != null || cameraProvider == null) return
+        val want = if (wantedFps() > 30) wantedFps() else 30
+        if (want != boundFps) bindCamera()
+    }
+
+    /** Telefonun bu kamerada verdiği en yüksek sabit kare hızı aralığı (istenenden büyük olmayan). */
+    @androidx.annotation.OptIn(ExperimentalCamera2Interop::class)
+    private fun pickFpsRange(provider: ProcessCameraProvider, want: Int): Range<Int>? {
+        return try {
+            val info = buildSelector(provider).filter(provider.availableCameraInfos).firstOrNull() ?: return null
+            val ranges = Camera2CameraInfo.from(info).getCameraCharacteristic(CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES) ?: return null
+            ErrorLog.add("Kamera fps aralıkları: " + ranges.joinToString { "${it.lower}-${it.upper}" })
+            ranges.filter { it.upper <= want }.maxWithOrNull(compareBy<Range<Int>> { it.upper }.thenBy { it.lower })
+        } catch (e: Throwable) { ErrorLog.add("fps aralığı okunamadı: ${e.message}"); null }
+    }
+
+    @androidx.annotation.OptIn(ExperimentalCamera2Interop::class)
     private fun bindCamera() {
         val provider = cameraProvider ?: return
         try {
@@ -791,10 +828,21 @@ class MainActivity : AppCompatActivity() {
                 .setAspectRatioStrategy(AspectRatioStrategy.RATIO_4_3_FALLBACK_AUTO_STRATEGY)
                 .setResolutionStrategy(ResolutionStrategy(Size(640, 480), ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER))
                 .build()
-            val an = ImageAnalysis.Builder()
+            val want = wantedFps()
+            val anb = ImageAnalysis.Builder()
                 .setResolutionSelector(sel)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .build()
+            var got = 30
+            if (want > 30) {
+                val r = pickFpsRange(provider, want)
+                if (r != null && r.upper > 30) {
+                    Camera2Interop.Extender(anb).setCaptureRequestOption(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, r)
+                    got = r.upper
+                }
+            }
+            boundFps = if (want > 30) want else 30
+            val an = anb.build()
+            if (want > 30) say(if (got >= want) "Kamera $got fps'e ayarlandı." else if (got > 30) "Telefon bu kamerada en çok $got fps veriyor ($want fps istendi)." else "Telefon bu kamerada 30 fps üstünü vermiyor; kayıt 30 fps olacak.")
             an.setAnalyzer(analysisExecutor) { proxy -> analyze(proxy) }
             provider.unbindAll()
             camera = provider.bindToLifecycle(this, buildSelector(provider), an, ic)
@@ -802,7 +850,7 @@ class MainActivity : AppCompatActivity() {
             analysis = an
             torchOn = false
             updateControls()
-            say("Kamera hazır.")
+            if (want <= 30) say("Kamera hazır.")
         } catch (e: Throwable) {
             lastError = e
             if (!frontFacing && backIndex != 0) {
@@ -1249,11 +1297,12 @@ class MainActivity : AppCompatActivity() {
         val cfg = if (fromCamera) overlayConfig(device, false) else null
         val data = if (fromCamera && cfg != null && cfg.any) overlayData(0, false, 0f) else null
         val keepOriginal = fromCamera && settings.saveOriginal && temp != null
+        val flash = fromCamera && torchOn
         runWork("Fotoğraf ${device.name} gibi işleniyor...") {
             val ext = device.photoFormat
             val out = File(cacheDir, "cikti_${System.nanoTime()}.$ext")
             try {
-                PhotoProcessor.process(this, uri, device, System.nanoTime(), out, cfg, data) { ErrorLog.add(it) }
+                PhotoProcessor.process(this, uri, device, System.nanoTime(), out, cfg, data, flash) { ErrorLog.add(it) }
                 val base = "${device.id}_${stamp()}"
                 val name = "$base.$ext"
                 val saved = Gallery.save(this, out, name, if (ext == "png") "image/png" else "image/jpeg", Gallery.DIR_PHOTO)

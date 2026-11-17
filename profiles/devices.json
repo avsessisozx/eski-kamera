@@ -1681,7 +1681,7 @@
       "category": "webcam",
       "year": 2007,
       "icon": "webcam",
-      "note": "Oyun konsolu kamerası; gerçekte 60-120 fps, telefonda en çok 30 fps",
+      "note": "Oyun konsolu kamerası; gerçekte 60-120 fps. 120 fps modu yalnızca telefon donanımı destekliyorsa çalışır",
       "spec_source": "kaynaklı: 640x480 60 Hz ve 320x240 120 Hz (Wikipedia, Sony); telefonda kare hızı 30 ile sınırlı",
       "look_source": "tahmini",
       "photo": {
@@ -1730,6 +1730,20 @@
             "codec": "h264",
             "container": "mp4",
             "video_kbps": 900,
+            "audio": {
+              "rate": 16000,
+              "channels": 1,
+              "kbps": 48
+            }
+          },
+          {
+            "label": "320x240 120fps (MP4, telefon desteklerse)",
+            "width": 320,
+            "height": 240,
+            "fps": 120,
+            "codec": "h264",
+            "container": "mp4",
+            "video_kbps": 2500,
             "audio": {
               "rate": 16000,
               "channels": 1,
