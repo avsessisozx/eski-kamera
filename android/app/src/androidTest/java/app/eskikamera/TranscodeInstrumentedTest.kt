@@ -96,7 +96,7 @@ class TranscodeInstrumentedTest {
         assertEquals("ses ${res.info}", "yes", hasAudio)
         assertTrue("MP4 beklenir: ${res.file.name}", res.file.name.endsWith(".mp4"))
         assertTrue("süre günlüğü yok\n${logs.joinToString("\n")}", logs.any { it.startsWith("Süre:") })
-        android.util.Log.i("EskiKamera", "SMOOTH_TEST " + logs.filter { it.startsWith("Süre:") || it.startsWith("Görüntü süreleri") || it.startsWith("Kaynak") }.joinToString(" | "))
+        android.util.Log.i("EskiKamera", "SMOOTH_TEST " + logs.filter { it.startsWith("Süre:") || it.startsWith("Görüntü süreleri") || it.startsWith("Kaynak") || it.startsWith("Görünüm aşamaları") }.joinToString(" | "))
     }
 
     @Test
@@ -107,6 +107,6 @@ class TranscodeInstrumentedTest {
         val logs = ArrayList<String>()
         val t0 = System.nanoTime()
         VideoTranscoder.transcode(ctx, Uri.fromFile(src), dev, dev.modes[0], outDir, "sonuc", { logs.add(it) }, { })
-        android.util.Log.i("EskiKamera", "TIMING_TEST toplam ${(System.nanoTime() - t0) / 1_000_000} ms | " + logs.filter { it.startsWith("Süre:") || it.startsWith("Görüntü süreleri") || it.startsWith("Kaynak") }.joinToString(" | "))
+        android.util.Log.i("EskiKamera", "TIMING_TEST toplam ${(System.nanoTime() - t0) / 1_000_000} ms | " + logs.filter { it.startsWith("Süre:") || it.startsWith("Görüntü süreleri") || it.startsWith("Kaynak") || it.startsWith("Görünüm aşamaları") }.joinToString(" | "))
     }
 }

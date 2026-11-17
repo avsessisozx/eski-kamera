@@ -14,6 +14,13 @@ import kotlin.math.sqrt
  */
 object LookProcessor {
     private const val BAND = 128
+    /** Aşama süreleri (ns, tüm iş parçacıkları toplamı): 0 bayer, 1 bulanıklık, 2 renk, 3 ton, 4 parlama, 5 keskinleştirme, 6 gürültü ve yazma. */
+    private val STATS = java.util.concurrent.atomic.AtomicLongArray(7)
+    fun statsReset() { for (i in 0 until 7) STATS.set(i, 0L) }
+    fun statsText(): String {
+        val n = arrayOf("bayer", "bulanıklık", "renk", "ton", "parlama", "keskinleştirme", "gürültü+yazma")
+        return "Görünüm aşamaları (iş parçacığı toplamı): " + n.indices.joinToString(", ") { "${n[it]} ${STATS.get(it) / 1_000_000} ms" }
+    }
     private val BAYER4 = intArrayOf(0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5)
     private val GB_PALETTE = intArrayOf(0xFF0F380F.toInt(), 0xFF306230.toInt(), 0xFF8BAC0F.toInt(), 0xFF9BBC0F.toInt())
 
@@ -89,6 +96,8 @@ object LookProcessor {
     ) {
         val bh = ye - ys
         val n = w * bh
+        var tk = System.nanoTime()
+        fun lap(i: Int) { val now = System.nanoTime(); STATS.addAndGet(i, now - tk); tk = now }
         var r = FloatArray(n)
         var g = FloatArray(n)
         var b = FloatArray(n)
@@ -107,13 +116,16 @@ object LookProcessor {
             val res = bayerRoundtrip(r, g, b, w, bh)
             r = res[0]; g = res[1]; b = res[2]
         }
+        lap(0)
 
         val tmp = FloatArray(n)
         if (look.blur > 0f) {
             blur(r, w, bh, look.blur, tmp); blur(g, w, bh, look.blur, tmp); blur(b, w, bh, look.blur, tmp)
         }
+        lap(1)
         if (look.chromaSoft > 0.3f) chromaSoften(r, g, b, w, bh, look.chromaSoft, tmp)
         if (look.chromaBleed > 0) chromaBleed(r, g, b, w, bh, look.chromaBleed)
+        lap(2)
 
         // ton, renk
         val gammaLut = if (look.gamma != 1f) FloatArray(4097) { (it / 4096f).toDouble().pow(1.0 / look.gamma.toDouble()).toFloat() } else null
@@ -135,6 +147,7 @@ object LookProcessor {
             r[i] = clamp01(rr); g[i] = clamp01(gg); b[i] = clamp01(bb)
         }
 
+        lap(3)
         // parlak alan taşması
         if (look.bloom > 0f) {
             val hr = FloatArray(n); val hg = FloatArray(n); val hb = FloatArray(n)
@@ -149,17 +162,19 @@ object LookProcessor {
             }
         }
 
-        // aşırı keskinleştirme
+        lap(4)
+        // aşırı keskinleştirme (kameralardaki gibi yalnızca parlaklıkta; 3 yerine 1 bulanıklık gerekir)
         if (look.sharpen > 0f) {
-            val br = r.copyOf(); val bg = g.copyOf(); val bbl = b.copyOf()
-            blur(br, w, bh, 1.0f, tmp); blur(bg, w, bh, 1.0f, tmp); blur(bbl, w, bh, 1.0f, tmp)
+            val lum = FloatArray(n) { 0.299f * r[it] + 0.587f * g[it] + 0.114f * b[it] }
+            val lb = lum.copyOf()
+            blur(lb, w, bh, 1.0f, tmp)
             val a = look.sharpen
             for (i in 0 until n) {
-                r[i] = clamp01(r[i] + (r[i] - br[i]) * a)
-                g[i] = clamp01(g[i] + (g[i] - bg[i]) * a)
-                b[i] = clamp01(b[i] + (b[i] - bbl[i]) * a)
+                val d = (lum[i] - lb[i]) * a
+                r[i] = clamp01(r[i] + d); g[i] = clamp01(g[i] + d); b[i] = clamp01(b[i] + d)
             }
         }
+        lap(5)
 
         // vinyet + gürültü + yazma (yalnızca çekirdek satırlar)
         val vigLut = if (look.vignette > 0f) FloatArray(1025) { 1f - look.vignette * (it / 1024f).toDouble().pow(2.2).toFloat() } else null
@@ -219,6 +234,7 @@ object LookProcessor {
                 out[y * w + x] = px
             }
         }
+        lap(6)
     }
 
     private fun hotPixels(out: IntArray, w: Int, h: Int, look: Look, seed: Long) {
@@ -346,11 +362,12 @@ object LookProcessor {
         val n = w * h
         val l = FloatArray(n) { 0.299f * r[it] + 0.587f * g[it] + 0.114f * b[it] }
         val dr = FloatArray(n) { r[it] - l[it] }
-        val dg = FloatArray(n) { g[it] - l[it] }
         val db = FloatArray(n) { b[it] - l[it] }
-        blur(dr, w, h, sigma * 1.8f, tmp); blur(dg, w, h, sigma * 1.8f, tmp); blur(db, w, h, sigma * 1.8f, tmp)
+        blur(dr, w, h, sigma * 1.8f, tmp); blur(db, w, h, sigma * 1.8f, tmp)
         for (i in 0 until n) {
-            r[i] = clamp01(l[i] + dr[i]); g[i] = clamp01(l[i] + dg[i]); b[i] = clamp01(l[i] + db[i])
+            // parlaklık sabit kaldığı için yeşil fark, kırmızı ve mavi farktan doğrudan çıkar
+            val dg = -(0.299f * dr[i] + 0.114f * db[i]) / 0.587f
+            r[i] = clamp01(l[i] + dr[i]); g[i] = clamp01(l[i] + dg); b[i] = clamp01(l[i] + db[i])
         }
     }
 

@@ -52,6 +52,7 @@ object VideoTranscoder {
             if (vIdx < 0) throw ProcessException("Dosyada görüntü akışı yok")
             log("Kaynak video: süre ${durationUs / 1_000_000.0} sn, ses akışı: $aMime, dönme: $rotation")
             val tStart = System.nanoTime()
+            LookProcessor.statsReset()
 
             val primaryType = if (mode.container == "3gp") MediaMuxer.OutputFormat.MUXER_OUTPUT_3GPP else MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4
             val vTmp = File(work, "v.tmp")
@@ -107,6 +108,7 @@ object VideoTranscoder {
             }
             progress(1f)
             val tEnd = System.nanoTime()
+            log(LookProcessor.statsText())
             log("Süre: görüntü ${(vDone - tStart) / 1_000_000} ms, ses (paralel) $audioMs ms, birleştirme ${(tEnd - vDone) / 1_000_000} ms, toplam ${(tEnd - tStart) / 1_000_000} ms")
             return TranscodeResult(outFile, "${device.name} / ${mode.label}\nGörüntü: $vInfo\nSes: $aInfo")
         } finally {
