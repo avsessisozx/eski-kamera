@@ -47,8 +47,11 @@ object VideoTranscoder {
                     aIdx = i
                 }
             }
+            val aMime = if (aIdx >= 0) (probe.getTrackFormat(aIdx).getString(MediaFormat.KEY_MIME) ?: "?") else "yok"
             probe.release()
             if (vIdx < 0) throw ProcessException("Dosyada görüntü akışı yok")
+            log("Kaynak video: süre ${durationUs / 1_000_000.0} sn, ses akışı: $aMime, dönme: $rotation")
+            val tStart = System.nanoTime()
 
             val primaryType = if (mode.container == "3gp") MediaMuxer.OutputFormat.MUXER_OUTPUT_3GPP else MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4
             val vTmp = File(work, "v.tmp")
@@ -57,6 +60,21 @@ object VideoTranscoder {
             val candidates = if (wanted == "video/avc") listOf("video/avc") else listOf(wanted, "video/avc")
             var vInfo: String? = null
             var lastError: Exception? = null
+            // ses, görüntüyle aynı anda ayrı iş parçacığında işlenir (sırayla yapmak süreyi gereksiz uzatıyordu)
+            var aInfo = "ses yok"
+            var audioOk = false
+            var audioMs = 0L
+            val audioThread = if (aIdx >= 0) Thread {
+                val a0 = System.nanoTime()
+                try {
+                    aInfo = encodeAudio(context, src, aIdx, mode, aTmp, primaryType, log)
+                    audioOk = true
+                } catch (t: Throwable) {
+                    aInfo = "ses işlenemedi: ${t.message}"
+                    log("Ses işlenemedi (video sessiz kaydedilecek): ${t.javaClass.simpleName}: ${t.message}")
+                }
+                audioMs = (System.nanoTime() - a0) / 1_000_000
+            }.apply { name = "ses-donusturme"; start() } else null
             for ((n, mime) in candidates.withIndex()) {
                 try {
                     vTmp.delete()
@@ -70,26 +88,26 @@ object VideoTranscoder {
                 }
             }
             if (vInfo == null) throw ProcessException("Video kodlanamadı: ${lastError?.message}", lastError)
-            var aInfo = "ses yok"
-            if (aIdx >= 0) {
-                aInfo = encodeAudio(context, src, aIdx, mode, aTmp, primaryType, log)
-            }
+            val vDone = System.nanoTime()
+            audioThread?.join()
             progress(0.95f)
 
             var ext = if (primaryType == MediaMuxer.OutputFormat.MUXER_OUTPUT_3GPP) ".3gp" else ".mp4"
             var outFile = File(outDir, baseName + ext)
             try {
-                mux(primaryType, vTmp, if (aIdx >= 0) aTmp else null, outFile, rotation)
+                mux(primaryType, vTmp, if (audioOk) aTmp else null, outFile, rotation)
             } catch (e: Exception) {
                 if (primaryType == MediaMuxer.OutputFormat.MUXER_OUTPUT_3GPP) {
                     log("3GP birleştirme olmadı (${e.message}), MP4 kullanılıyor")
                     outFile.delete()
                     ext = ".mp4"
                     outFile = File(outDir, baseName + ext)
-                    mux(MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4, vTmp, if (aIdx >= 0) aTmp else null, outFile, rotation)
+                    mux(MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4, vTmp, if (audioOk) aTmp else null, outFile, rotation)
                 } else throw e
             }
             progress(1f)
+            val tEnd = System.nanoTime()
+            log("Süre: görüntü ${(vDone - tStart) / 1_000_000} ms, ses (paralel) $audioMs ms, birleştirme ${(tEnd - vDone) / 1_000_000} ms, toplam ${(tEnd - tStart) / 1_000_000} ms")
             return TranscodeResult(outFile, "${device.name} / ${mode.label}\nGörüntü: $vInfo\nSes: $aInfo")
         } finally {
             work.deleteRecursively()
@@ -252,39 +270,56 @@ object VideoTranscoder {
             var framesIn = 0
             val decInfo = MediaCodec.BufferInfo()
 
+            var tCopy = 0L
+            var tProc = 0L
+            var tEnc = 0L
+            var seen = 0
             while (!encDone) {
+                var worked = false
                 if (!inputDone) {
-                    val ib = decoder.dequeueInputBuffer(TIMEOUT_US)
-                    if (ib >= 0) {
+                    while (true) {
+                        val ib = decoder.dequeueInputBuffer(0)
+                        if (ib < 0) break
+                        worked = true
                         val buf = decoder.getInputBuffer(ib)!!
                         val n = ex.readSampleData(buf, 0)
                         if (n < 0) {
                             decoder.queueInputBuffer(ib, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
                             inputDone = true
-                        } else {
-                            decoder.queueInputBuffer(ib, 0, n, ex.sampleTime, 0)
-                            ex.advance()
+                            break
                         }
+                        decoder.queueInputBuffer(ib, 0, n, ex.sampleTime, 0)
+                        ex.advance()
                     }
                 }
                 if (!decDone) {
-                    val ob = decoder.dequeueOutputBuffer(decInfo, TIMEOUT_US)
-                    if (ob >= 0) {
+                    while (true) {
+                        val ob = decoder.dequeueOutputBuffer(decInfo, 0)
+                        if (ob == MediaCodec.INFO_TRY_AGAIN_LATER) break
+                        worked = true
+                        if (ob < 0) continue
                         val eos = decInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0
                         if (decInfo.size > 0) {
+                            seen++
                             val pts = decInfo.presentationTimeUs
                             if (firstPts < 0) firstPts = pts
                             val rel = pts - firstPts
                             if (rel + tol >= nextKeep) {
+                                val t0 = System.nanoTime()
                                 val img = decoder.getOutputImage(ob)
                                 if (img != null) {
                                     val frame = try { copyFrame(img) } finally { img.close() }
+                                    val t1 = System.nanoTime()
                                     val proc = FramePipeline.process(frame, mode, look, device.videoPrescale, seedBase + framesIn)
                                     val yuv = FrameSampler.rgbToYuv420(proc, mode.width, mode.height)
+                                    val t2 = System.nanoTime()
                                     val ei = encoderInput()
                                     val inImg = codec.getInputImage(ei) ?: throw ProcessException("Kodlayıcı giriş görüntüsü alınamadı")
                                     fillImage(inImg, yuv, mode.width, mode.height)
                                     codec.queueInputBuffer(ei, 0, mode.width * mode.height * 3 / 2, rel, 0)
+                                    tCopy += t1 - t0
+                                    tProc += t2 - t1
+                                    tEnc += System.nanoTime() - t2
                                     framesIn++
                                     lastRel = rel
                                     nextKeep += frameUs
@@ -298,11 +333,14 @@ object VideoTranscoder {
                             decDone = true
                             val ei = encoderInput()
                             codec.queueInputBuffer(ei, 0, 0, lastRel, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+                            break
                         }
                     }
                 }
                 drainEncoder(if (decDone) TIMEOUT_US else 0)
+                if (!worked && !decDone) Thread.sleep(2)
             }
+            log("Görüntü süreleri: çözülen $seen kare, alınıp kopyalanan ${tCopy / 1_000_000} ms, işleme ${tProc / 1_000_000} ms, kodlama ${tEnc / 1_000_000} ms")
             if (framesIn == 0 || written == 0) throw ProcessException("Hiç video karesi yazılamadı")
             return "${encoder.mime} ${mode.width}x${mode.height} ${mode.fps}fps ${mode.videoKbps}kbps, $framesIn kare"
         } finally {
@@ -441,28 +479,36 @@ object VideoTranscoder {
             var decDone = false
             val decInfo = MediaCodec.BufferInfo()
             while (!encDone) {
+                var worked = false
                 if (!inputDone) {
-                    val ib = decoder.dequeueInputBuffer(TIMEOUT_US)
-                    if (ib >= 0) {
+                    while (true) {
+                        val ib = decoder.dequeueInputBuffer(0)
+                        if (ib < 0) break
+                        worked = true
                         val buf = decoder.getInputBuffer(ib)!!
                         val n = ex.readSampleData(buf, 0)
                         if (n < 0) {
                             decoder.queueInputBuffer(ib, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
                             inputDone = true
-                        } else {
-                            decoder.queueInputBuffer(ib, 0, n, ex.sampleTime, 0)
-                            ex.advance()
+                            break
                         }
+                        decoder.queueInputBuffer(ib, 0, n, ex.sampleTime, 0)
+                        ex.advance()
                     }
                 }
                 if (!decDone) {
-                    val ob = decoder.dequeueOutputBuffer(decInfo, TIMEOUT_US)
-                    if (ob == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-                        val f = decoder.outputFormat
-                        inRate = f.getInteger(MediaFormat.KEY_SAMPLE_RATE)
-                        inCh = f.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
-                        chain = null
-                    } else if (ob >= 0) {
+                    while (true) {
+                        val ob = decoder.dequeueOutputBuffer(decInfo, 0)
+                        if (ob == MediaCodec.INFO_TRY_AGAIN_LATER) break
+                        worked = true
+                        if (ob == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                            val f = decoder.outputFormat
+                            inRate = f.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+                            inCh = f.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
+                            chain = null
+                            continue
+                        }
+                        if (ob < 0) continue
                         val eos = decInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0
                         if (decInfo.size > 0) {
                             val buf = decoder.getOutputBuffer(ob)!!
@@ -479,10 +525,12 @@ object VideoTranscoder {
                             decDone = true
                             val ei = encoderInput()
                             codec.queueInputBuffer(ei, 0, 0, framesFed * 1_000_000L / spec.rate, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+                            break
                         }
                     }
                 }
                 drainEncoder(if (decDone) TIMEOUT_US else 0)
+                if (!worked && !decDone) Thread.sleep(2)
             }
             if (written == 0) throw ProcessException("Hiç ses örneği yazılamadı")
             return "${encoder.mime} ${spec.rate}Hz ${spec.channels} kanal"

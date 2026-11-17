@@ -75,4 +75,17 @@ class UiSmokeTest {
             }
         }
     }
+
+    @Test
+    fun devicePickerScrollsToSelected() {
+        ActivityScenario.launch(MainActivity::class.java).use { sc ->
+            sc.onActivity { it.selectDeviceForTest("flir_one") }
+            sc.onActivity { it.openDevicePickerForTest() }
+            val ok = waitFor(10_000) { var v = false; sc.onActivity { a -> v = a.pickerSelectedVisible && a.pickerScrollY > 0 }; v }
+            var y = -1
+            var vis = false
+            sc.onActivity { y = it.pickerScrollY; vis = it.pickerSelectedVisible }
+            assertTrue("seçili cihaz görünür olmalı: scrollY=$y görünür=$vis", ok && vis && y > 0)
+        }
+    }
 }

@@ -61,6 +61,7 @@ object LookProcessor {
     private fun runBands(src: IntArray, out: IntArray, w: Int, h: Int, look: Look, seed: Long, threads: Int) {
         var pad = 4
         pad = max(pad, ceil(3.0 * look.blur).toInt() + 2)
+        if (look.chromaSoft > 0.3f) pad = max(pad, ceil(3.0 * look.chromaSoft * 1.8).toInt() + 2)
         if (look.bloom > 0f) pad = max(pad, ceil(3.0 * bloomSigma(w)).toInt() + 2)
         if (pad % 2 == 1) pad++
         val bands = (h + BAND - 1) / BAND
@@ -111,6 +112,7 @@ object LookProcessor {
         if (look.blur > 0f) {
             blur(r, w, bh, look.blur, tmp); blur(g, w, bh, look.blur, tmp); blur(b, w, bh, look.blur, tmp)
         }
+        if (look.chromaSoft > 0.3f) chromaSoften(r, g, b, w, bh, look.chromaSoft, tmp)
         if (look.chromaBleed > 0) chromaBleed(r, g, b, w, bh, look.chromaBleed)
 
         // ton, renk
@@ -336,6 +338,20 @@ object LookProcessor {
             }
         }
         return arrayOf(orr, og, ob)
+    }
+
+    // ------------------------------------------------------------ renk çözünürlüğü
+    /** Parlaklığı olduğu gibi bırakıp yalnızca renk bilgisini bulanıklaştırır (eski sensör ve kodekler renkte daha kabadır). */
+    private fun chromaSoften(r: FloatArray, g: FloatArray, b: FloatArray, w: Int, h: Int, sigma: Float, tmp: FloatArray) {
+        val n = w * h
+        val l = FloatArray(n) { 0.299f * r[it] + 0.587f * g[it] + 0.114f * b[it] }
+        val dr = FloatArray(n) { r[it] - l[it] }
+        val dg = FloatArray(n) { g[it] - l[it] }
+        val db = FloatArray(n) { b[it] - l[it] }
+        blur(dr, w, h, sigma * 1.8f, tmp); blur(dg, w, h, sigma * 1.8f, tmp); blur(db, w, h, sigma * 1.8f, tmp)
+        for (i in 0 until n) {
+            r[i] = clamp01(l[i] + dr[i]); g[i] = clamp01(l[i] + dg[i]); b[i] = clamp01(l[i] + db[i])
+        }
     }
 
     // ------------------------------------------------------------ analog renk taşması (VHS/Hi8)

@@ -19,7 +19,9 @@ data class Look(
     val jpegQuality: Int,
     val levels: Int = 0,
     val palette: Int = 0,
-    val border: Float = 0f
+    val border: Float = 0f,
+    /** Renk (krominans) kanalının ekstra yumuşatılması: eski sensör ve kodeklerde renk çözünürlüğü düşüktür. */
+    val chromaSoft: Float = 0f
 )
 
 class AudioSpec(val rate: Int, val channels: Int, val kbps: Int, val pcm: Boolean)
@@ -34,8 +36,20 @@ class VideoMode(
     val videoKbps: Int,
     val audio: AudioSpec,
     val nativeW: Int = 0,
-    val nativeH: Int = 0
+    val nativeH: Int = 0,
+    /** true ise işlenen küçük kare yumuşak (bicubic) yöntemle büyütülür; false ise piksel piksel. */
+    val smooth: Boolean = false
 ) {
+    /**
+     * Gerçek cihaz boyutu telefon ekranında devasa piksellere dönüşür. İzleme için: görüntü yine cihazın
+     * çözünürlüğünde işlenir, sonra yumuşak büyütülüp H.264/MP4 olarak kodlanır (bozulmalar korunur).
+     */
+    fun smoothExport(): VideoMode {
+        if (nativeW > 0 || height >= 360) return this
+        val k = ((480 + height - 1) / height).coerceIn(2, 8)
+        return VideoMode(label, width * k, height * k, fps, "h264", "mp4", (videoKbps * 3).coerceIn(350, 1500), audio, width, height, true)
+    }
+
     /** İşleme çözünürlüğü (çıktı bunun tam sayı katıysa piksel piksel büyütülür). */
     val procW: Int get() = if (nativeW > 0) nativeW else width
     val procH: Int get() = if (nativeH > 0) nativeH else height
@@ -111,7 +125,8 @@ object Profiles {
         bayer = m["bayer"] as Boolean, hotPixels = m.i("hot_pixels"), chromaBleed = 0,
         jpegQuality = m.i("jpeg_quality"),
         levels = (m["levels"] as Number?)?.toInt() ?: 0, palette = (m["palette"] as Number?)?.toInt() ?: 0,
-        border = (m["border"] as Number?)?.toFloat() ?: 0f
+        border = (m["border"] as Number?)?.toFloat() ?: 0f,
+        chromaSoft = m.f("blur") * 0.9f
     )
 
     private fun videoLook(m: Map<String, Any?>): Look {
@@ -123,7 +138,8 @@ object Profiles {
             cast = castOf(m), vignette = m.f("vignette"), bloom = 0f,
             bayer = false, hotPixels = 0, chromaBleed = m.i("chroma_bleed"), jpegQuality = 0,
             levels = (m["levels"] as Number?)?.toInt() ?: 0, palette = (m["palette"] as Number?)?.toInt() ?: 0,
-            border = (m["border"] as Number?)?.toFloat() ?: 0f
+            border = (m["border"] as Number?)?.toFloat() ?: 0f,
+            chromaSoft = m.f("blur") * 0.9f
         )
     }
 

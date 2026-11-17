@@ -7,6 +7,7 @@ object FramePipeline {
         val nh = mode.procH
         val rgb = FrameSampler.toRgb(frame, 0, nw, nh, prescale)
         val proc = LookProcessor.processFrame(rgb, nw, nh, look, seed)
-        return FrameSampler.upscaleNearest(proc, nw, nh, mode.width, mode.height)
+        return if (mode.smooth) FrameSampler.resizeSmooth(proc, nw, nh, mode.width, mode.height)
+        else FrameSampler.upscaleNearest(proc, nw, nh, mode.width, mode.height)
     }
 }

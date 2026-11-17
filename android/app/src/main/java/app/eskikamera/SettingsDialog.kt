@@ -9,7 +9,6 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.Switch
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 
 /** Ayarlar ekranı: her ayarın altında ne işe yaradığını anlatan kısa açıklama bulunur. */
@@ -24,12 +23,12 @@ class SettingsDialog(
     fun show() {
         val col = LinearLayout(act).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(8), dp(16), dp(8)) }
         fun section(t: String) = col.addView(TextView(act).apply {
-            text = t; textSize = 15f; setTypeface(typeface, Typeface.BOLD); setTextColor(0xFF1565C0.toInt()); setPadding(0, dp(18), 0, dp(4))
+            text = t.uppercase(); textSize = 13f; letterSpacing = 0.1f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD); setTextColor(Ui.AMBER); setPadding(0, dp(20), 0, dp(4))
         })
-        fun desc(t: String) = col.addView(TextView(act).apply { text = t; textSize = 12f; setTextColor(0xFF616161.toInt()); setPadding(0, 0, 0, dp(6)) })
+        fun desc(t: String) = col.addView(TextView(act).apply { text = t; textSize = 12f; setTextColor(Ui.TEXT_DIM); setPadding(0, 0, 0, dp(6)) })
         fun switchRow(title: String, d: String, get: () -> Boolean, set: (Boolean) -> Unit, key: String) {
             val sw = Switch(act).apply {
-                text = title; textSize = 15f; isChecked = get()
+                text = title; textSize = 15f; setTextColor(Ui.TEXT); isChecked = get()
                 setOnCheckedChangeListener { _: CompoundButton, v: Boolean -> set(v); onChanged(key) }
             }
             col.addView(sw, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(6) })
@@ -37,19 +36,22 @@ class SettingsDialog(
         }
         fun choiceRow(title: String, labels: List<String>, values: List<Int>, get: () -> Int, set: (Int) -> Unit, key: String) {
             val row = TextView(act).apply {
-                textSize = 15f; setTextColor(Color.BLACK)
-                setPadding(dp(12), dp(10), dp(12), dp(10))
-                background = GradientDrawable().apply { setColor(0xFFEEEEEE.toInt()); cornerRadius = dp(10).toFloat() }
+                textSize = 15f; setTextColor(Ui.TEXT)
+                setPadding(dp(14), dp(12), dp(14), dp(12))
+                background = Ui.round(Ui.PANEL, 12, act)
             }
             fun refresh() { row.text = "$title: " + labels[values.indexOf(get()).coerceAtLeast(0)] }
             refresh()
             row.setOnClickListener {
-                AlertDialog.Builder(act).setTitle(title).setItems(labels.toTypedArray()) { _, which ->
+                Ui.choose(act, title, labels) { which ->
                     set(values[which]); refresh(); onChanged(key)
-                }.show()
+                }
             }
             col.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(6) })
         }
+
+        section("Video çıktısı")
+        switchRow("İzleme için yumuşak büyüt", Help.SETTINGS_SMOOTH, { s.smoothExport }, { s.smoothExport = it }, "smooth")
 
         section("Görüntü üstü bilgiler")
         switchRow("Tarih damgası", Help.SETTINGS_DATE, { s.dateStamp }, { s.dateStamp = it }, "date")
@@ -86,15 +88,9 @@ class SettingsDialog(
         choiceRow("Hassasiyet", listOf("1 (az)", "2", "3 (orta)", "4", "5 (çok)"), listOf(1, 2, 3, 4, 5), { s.sonarSensitivity }, { s.sonarSensitivity = it }, "ssens")
         choiceRow("Hareket olunca", listOf("Fotoğraf çek", "Video kaydet (sessiz)"), listOf(0, 1), { s.sonarAction }, { s.sonarAction = it }, "saction")
         desc(Help.SETTINGS_SONAR)
-        val test = TextView(act).apply {
-            text = "Sonar ses testi"; textSize = 15f; setTextColor(Color.WHITE); gravity = android.view.Gravity.CENTER
-            setPadding(dp(12), dp(12), dp(12), dp(12))
-            background = GradientDrawable().apply { setColor(0xFF1565C0.toInt()); cornerRadius = dp(10).toFloat() }
-            setOnClickListener { runSonarTest() }
-        }
+        val test = Ui.button(act, "Sonar ses testi", true) { runSonarTest() }
         col.addView(test, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8); bottomMargin = dp(16) })
 
-        val sv = ScrollView(act).apply { addView(col) }
-        AlertDialog.Builder(act).setTitle("Ayarlar").setView(sv).setPositiveButton("Kapat", null).show()
+        Ui.dialog(act, "Ayarlar", col).show()
     }
 }

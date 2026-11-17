@@ -75,4 +75,38 @@ class TranscodeInstrumentedTest {
         assertEquals(640, o.outWidth)
         assertEquals(480, o.outHeight)
     }
+
+    @Test
+    fun smoothExportConversion() {
+        val dev = devices().first { it.id == "nokia_6230" }
+        val raw = dev.modes[0]
+        val mode = raw.smoothExport()
+        val src = copyAsset("sample.mp4")
+        val outDir = File(ctx.cacheDir, "t_smooth").also { it.mkdirs() }
+        val logs = ArrayList<String>()
+        val res = VideoTranscoder.transcode(ctx, Uri.fromFile(src), dev, mode, outDir, "sonuc", { logs.add(it) }, { })
+        val r = MediaMetadataRetriever()
+        r.setDataSource(res.file.path)
+        val w = r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)!!.toInt()
+        val h = r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)!!.toInt()
+        val hasAudio = r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_AUDIO)
+        r.release()
+        assertEquals("genişlik\n${logs.joinToString("\n")}", mode.width, w)
+        assertEquals("yükseklik", mode.height, h)
+        assertEquals("ses ${res.info}", "yes", hasAudio)
+        assertTrue("MP4 beklenir: ${res.file.name}", res.file.name.endsWith(".mp4"))
+        assertTrue("süre günlüğü yok\n${logs.joinToString("\n")}", logs.any { it.startsWith("Süre:") })
+        android.util.Log.i("EskiKamera", "SMOOTH_TEST " + logs.filter { it.startsWith("Süre:") || it.startsWith("Görüntü süreleri") || it.startsWith("Kaynak") }.joinToString(" | "))
+    }
+
+    @Test
+    fun timingRawConversion() {
+        val dev = devices().first { it.id == "vhs_kamkorder" }
+        val src = copyAsset("sample.mp4")
+        val outDir = File(ctx.cacheDir, "t_timing").also { it.mkdirs() }
+        val logs = ArrayList<String>()
+        val t0 = System.nanoTime()
+        VideoTranscoder.transcode(ctx, Uri.fromFile(src), dev, dev.modes[0], outDir, "sonuc", { logs.add(it) }, { })
+        android.util.Log.i("EskiKamera", "TIMING_TEST toplam ${(System.nanoTime() - t0) / 1_000_000} ms | " + logs.filter { it.startsWith("Süre:") || it.startsWith("Görüntü süreleri") || it.startsWith("Kaynak") }.joinToString(" | "))
+    }
 }

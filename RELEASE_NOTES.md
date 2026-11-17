@@ -1,9 +1,9 @@
-Eski Kamera 0.3.0
+Eski Kamera 0.3.1
 
-- 10 yeni cihaz: PXL-2000, Connectix QuickCam, Apple QuickTake 100, Nintendo DSi ve 3DS, PlayStation Eye, VTech Kidizoom (2), l'Espion anahtarlık kamera, FLIR One termal. Toplam 33.
-- Cihaz listesinde simge ve görüntü önizlemesi; video kalitesi seçicide de önizleme.
-- Son çekim küçük resmi ve uygulama içi görüntüleyici (yakınlaştırma, video oynatma, paylaş, sil, orijinal/işlenmiş karşılaştırma, ızgara).
-- Ön/arka kamera, fener, iki parmakla yakınlaştırma, dokunarak odaklama, lens seçimi.
-- Tarih damgası, kamkorder ekranı (REC, pil, sayaç), GPS hız/rakım, pusula ve eğim çizgisi, ses seviyesi çubuğu, CSV sensör kaydı.
-- Ekstra modlar: zaman atlamalı, yavaş çekim efekti, döngülü kayıt, hareketle çekim, sonar (deneysel).
-- Yapılmadı: çift kamera, flaş efekti, 120 fps. Gerçek telefonda test edilmedi (emülatörde test edildi); sonar, GPS, pusula emülatörde doğrulanamadı.
+- Videolar artık varsayılan olarak izleme için yumuşak büyütülmüş MP4 çıkar (eskiden 128x96 gibi devasa piksel ızgarası görünüyordu). Ayarlar > Video çıktısı ile cihazın gerçek boyutuna (3GP) dönülebilir.
+- Önizleme küçük kareleri artık yumuşak gösterir (piksel ızgarası yok); renk bilgisi parlaklıktan daha kaba çözünürlükte işlenir (eski sensör ve kodek etkisi).
+- Galeriden video dönüştürme hızlandı: ses ve görüntü aynı anda işleniyor, kodek döngüsündeki bekleme kaldırıldı.
+- Cihaz listesi açılınca seçili cihaza kayar.
+- Menüler, ayarlar ve pencereler uygulamanın kendi koyu stiline geçti.
+- Hata raporunda kaynak videonun süresi/ses durumu, işlem süreleri, silme ve lens değişimi görünür.
+- Gerçek telefonda test edilmedi; emülatörde test edildi.

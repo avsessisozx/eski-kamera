@@ -29,13 +29,11 @@ import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.PopupMenu
 import android.widget.ProgressBar
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
@@ -374,6 +372,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun currentMode(d: Device): VideoMode? = if (!d.hasVideo) null else d.modes[modeIndex.coerceIn(0, d.modes.size - 1)]
 
+    /** Kayıt, önizleme ve dönüştürmede kullanılan mod: ayar açıksa cihaz boyutu yerine yumuşak büyütülmüş izleme boyutu. */
+    private fun outMode(d: Device): VideoMode? {
+        val m = currentMode(d) ?: return null
+        val look = d.videoLook ?: return m
+        return if (settings.smoothExport && look.levels == 0 && look.palette == 0) m.smoothExport() else m
+    }
+
     private fun capNeedsVideo(c: Cap) = c == Cap.VIDEO || c == Cap.TIMELAPSE || c == Cap.SLOWMO || c == Cap.LOOP
 
     /** Önizleme ve (tetiklenen) kayıt video mu yoksa foto görünümünde mi? */
@@ -479,7 +484,7 @@ class MainActivity : AppCompatActivity() {
     private fun buildSpec(): PreviewSpec? {
         if (devices.isEmpty()) return null
         val d = currentDevice()
-        val m = currentMode(d)
+        val m = outMode(d)
         if (previewIsVideo() && m != null && d.videoLook != null) return PreviewSpec(m.width, m.height, d.videoLook, d.videoPrescale, m)
         val w = minOf(d.photoWidth, 640)
         var h = Math.round(w.toFloat() * d.photoHeight / d.photoWidth)
@@ -563,8 +568,20 @@ class MainActivity : AppCompatActivity() {
         val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(8), 0, dp(8), dp(8)) }
         val listScroll = ScrollView(this).apply { addView(list) }
         dialogView.addView(chipScroll, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-        dialogView.addView(listScroll, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(500)))
-        val dialog = AlertDialog.Builder(this).setView(dialogView).create()
+        dialogView.addView(listScroll, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
+        val dialog = Ui.dialog(this, "Cihaz seç", dialogView, scroll = false, buttons = listOf(Triple("Kapat", false, { d: android.app.Dialog -> d.dismiss() })))
+        var selectedRow: View? = null
+        fun scrollToSelected() {
+            listScroll.post {
+                val r = selectedRow
+                if (r != null) listScroll.scrollTo(0, (r.top - (listScroll.height - r.height) / 2).coerceAtLeast(0))
+                else listScroll.scrollTo(0, 0)
+                listScroll.post {
+                    pickerScrollY = listScroll.scrollY
+                    pickerSelectedVisible = r != null && r.top >= listScroll.scrollY - 1 && r.bottom <= listScroll.scrollY + listScroll.height + 1
+                }
+            }
+        }
 
         val filters = listOf("Hepsi" to null, "Telefon" to "telefon", "Dijital kamera" to "dijital kamera", "Kamkorder" to "kamkorder", "Oyun" to "oyun konsolu", "Diğer" to "diğer")
         val known = filters.mapNotNull { it.second }.toSet()
@@ -586,6 +603,7 @@ class MainActivity : AppCompatActivity() {
         }
         rebuild = {
             list.removeAllViews()
+            selectedRow = null
             val videoThumbs = previewIsVideo()
             val items = devices.withIndex().filter {
                 val sf = selectedFilter
@@ -615,8 +633,10 @@ class MainActivity : AppCompatActivity() {
                     dialog.dismiss(); selectDevice(idx, d.defaultMode)
                 }
                 list.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(6) })
+                if (idx == deviceIndex) selectedRow = row
             }
             loadThumbs(jobs)
+            scrollToSelected()
         }
         rebuildChips()
         rebuild()
@@ -627,7 +647,7 @@ class MainActivity : AppCompatActivity() {
         val d = currentDevice()
         if (!d.hasVideo || busy || liveRecorder != null || armed) return
         val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(8), dp(8), dp(8), dp(8)); setBackgroundColor(0xFF1B1B1B.toInt()) }
-        val dialog = AlertDialog.Builder(this).setTitle("Video kalitesi").setView(ScrollView(this).apply { addView(list) }).create()
+        val dialog = Ui.dialog(this, "Video kalitesi", list, scroll = true)
         val jobs = ArrayList<Pair<ImageView, () -> Bitmap?>>()
         val box = thumbBox()
         for ((i, m) in d.modes.withIndex()) {
@@ -646,35 +666,31 @@ class MainActivity : AppCompatActivity() {
         if (liveRecorder != null || armed || busy) return
         val modes = listOf(Cap.TIMELAPSE, Cap.SLOWMO, Cap.LOOP, Cap.MOTION, Cap.SONAR)
         val labels = modes.map { helpMode(it)!!.label }.toTypedArray()
-        AlertDialog.Builder(this).setTitle("Ekstra modlar").setItems(labels) { _, which ->
+        Ui.choose(this, "Ekstra modlar", labels.toList()) { which ->
             val c = modes[which]
             val hm = helpMode(c)!!
-            AlertDialog.Builder(this).setTitle(hm.title).setMessage(hm.text)
-                .setPositiveButton("Bu modu seç") { _, _ -> setCap(c) }
-                .setNegativeButton("Vazgeç", null).show()
-        }.show()
+            val tv = Ui.label(this, hm.text, 14f, Ui.TEXT).apply { setLineSpacing(0f, 1.15f); setPadding(dp(18), dp(14), dp(18), dp(14)) }
+            Ui.dialog(this, hm.title, tv, true, listOf(
+                Triple("Vazgeç", false, { d: android.app.Dialog -> d.dismiss() }),
+                Triple("Bu modu seç", true, { d: android.app.Dialog -> d.dismiss(); setCap(c) })
+            )).show()
+        }
     }
 
     private fun openMenu(anchor: View) {
-        val pm = PopupMenu(this, anchor)
-        pm.menu.add(0, 1, 0, "Ayarlar")
-        pm.menu.add(0, 2, 1, "Galeri (ızgara)")
-        pm.menu.add(0, 3, 2, "Galeriden foto dönüştür")
-        if (currentDevice().hasVideo) pm.menu.add(0, 4, 3, "Galeriden video dönüştür")
-        pm.menu.add(0, 5, 4, "Hata raporunu kopyala")
-        pm.menu.add(0, 6, 5, "Nasıl kullanılır?")
-        pm.setOnMenuItemClickListener {
-            when (it.itemId) {
-                1 -> openSettings()
-                2 -> if (!busy) ViewerActivity.open(this, 0, true)
-                3 -> if (!busy) pickPhoto.launch("image/*")
-                4 -> if (!busy) pickVideo.launch("video/*")
-                5 -> copyReport()
-                else -> showHelp()
-            }
-            true
-        }
-        pm.show()
+        val items = ArrayList<Pair<String, () -> Unit>>()
+        fun add(label: String, action: () -> Unit) { items.add(Pair(label, action)) }
+        add("Ayarlar") { openSettings() }
+        add("Galeri") { if (!busy) ViewerActivity.open(this, 0, true) }
+        add("Galeriden foto dönüştür") { if (!busy) pickPhoto.launch("image/*") }
+        if (currentDevice().hasVideo) add("Galeriden video dönüştür") { if (!busy) pickVideo.launch("video/*") }
+        add("Hata raporunu kopyala") { copyReport() }
+        add("Nasıl kullanılır?") { showHelp() }
+        val subs = listOf("Görüntü, kayıt ve mod ayarları", "Çekimlerin ızgara görünümü", "Telefondaki bir fotoğrafı seçili cihazın görünümüne çevir",
+            "Telefondaki bir videoyu seçili cihazın görünümüne çevir", "Sorun olursa bana yapıştır", "Kısa kullanım özeti")
+        val offset = if (currentDevice().hasVideo) 0 else 1
+        val subList = subs.filterIndexed { i, _ -> !(offset == 1 && i == 3) }
+        Ui.choose(this, "Menü", items.map { it.first }, subList) { which -> items[which].second() }
     }
 
     private fun openSettings() {
@@ -690,8 +706,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showHelp() {
-        AlertDialog.Builder(this).setTitle("Nasıl kullanılır?")
-            .setMessage(
+        Ui.message(this, "Nasıl kullanılır?", 
                 "1. Üstteki ismine dokunup bir cihaz seç. Listede her cihazın simgesi ve görüntü önizlemesi var.\n" +
                     "2. FOTO veya VİDEO seç. EKSTRA'dan zaman atlamalı, yavaş çekim, döngülü kayıt, hareketle çekim ve sonar (deneysel) modlarına bak; her birinin açıklaması orada.\n" +
                     "3. Büyük düğmeye bas. Video, kayıt biterken hazır olur.\n" +
@@ -699,7 +714,7 @@ class MainActivity : AppCompatActivity() {
                     "5. Ekrana dokunarak odaklanır, iki parmakla yakınlaştırırsın. Sağdaki düğmelerle ön/arka kamera, fener ve lens değişir.\n" +
                     "6. Menüdeki Ayarlar'dan tarih damgası, kamkorder ekranı, GPS, pusula ve diğer her şey açılır; her ayarın altında ne işe yaradığı yazar.\n\n" +
                     "Hata olursa ⋮ menüsünden 'Hata raporunu kopyala' ve bana yapıştır."
-            ).setPositiveButton("Tamam", null).show()
+            )
     }
 
     private fun copyReport() {
@@ -804,12 +819,14 @@ class MainActivity : AppCompatActivity() {
         val hasFront = try { cameraProvider!!.hasCamera(CameraSelector.DEFAULT_FRONT_CAMERA) } catch (_: Exception) { false }
         if (!frontFacing && !hasFront) { Toast.makeText(this, "Bu telefonda ön kamera bulunamadı", Toast.LENGTH_SHORT).show(); return }
         frontFacing = !frontFacing
+        ErrorLog.add("Kullanıcı kamera değiştirdi: ${if (frontFacing) "ön" else "arka"}")
         bindCamera()
     }
 
     private fun nextLens() {
         if (liveRecorder != null || frontFacing || backCount <= 1) return
         backIndex = (backIndex + 1) % backCount
+        ErrorLog.add("Kullanıcı lens değiştirdi: ${backIndex + 1}/$backCount")
         bindCamera()
     }
 
@@ -913,7 +930,9 @@ class MainActivity : AppCompatActivity() {
         shownH = shown.height
         runOnUiThread {
             val dr = BitmapDrawable(resources, shown)
-            dr.isFilterBitmap = shown.width >= 400
+            val sp = spec
+            val crisp = sp != null && (sp.look.levels > 0 || sp.look.palette != 0 || (sp.mode != null && sp.mode.nativeW > 0 && !sp.mode.smooth))
+            dr.isFilterBitmap = !crisp
             previewImage.setImageDrawable(dr)
         }
     }
@@ -986,7 +1005,7 @@ class MainActivity : AppCompatActivity() {
         worker.execute {
             val res = try { sonar.selfTest() } catch (t: Throwable) { "Test hatası: ${t.message}" }
             say("Sonar testi: $res")
-            runOnUiThread { AlertDialog.Builder(this).setTitle("Sonar ses testi").setMessage(res).setPositiveButton("Tamam", null).show() }
+            runOnUiThread { Ui.message(this, "Sonar ses testi", res) }
         }
     }
 
@@ -1007,6 +1026,9 @@ class MainActivity : AppCompatActivity() {
         val i = devices.indexOfFirst { it.id == id }
         if (i >= 0) selectDevice(i, devices[i].defaultMode)
     }
+    @Volatile internal var pickerScrollY = -1
+    @Volatile internal var pickerSelectedVisible = false
+    internal fun openDevicePickerForTest() = openDevicePicker()
     internal fun selectCapForTest(name: String) { setCap(Cap.valueOf(name)) }
 
     internal fun takePhoto(auto: Boolean = false) {
@@ -1048,7 +1070,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun buildRecorder(kind: Cap, silent: Boolean): LiveRecorder? {
         val d = currentDevice()
-        val m = currentMode(d)
+        val m = outMode(d)
         val look = d.videoLook
         if (m == null || look == null) { say("${d.name} cihazında video yok."); return null }
         val noAudio = silent || kind == Cap.TIMELAPSE || kind == Cap.SLOWMO
@@ -1248,7 +1270,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun processVideo(uri: Uri, temp: File?) {
         val device = currentDevice()
-        val mode = currentMode(device)
+        val mode = outMode(device)
         if (mode == null) {
             say("${device.name} cihazında video yok.")
             temp?.delete()

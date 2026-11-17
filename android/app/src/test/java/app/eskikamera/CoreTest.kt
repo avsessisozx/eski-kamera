@@ -149,4 +149,63 @@ class CoreTest {
         assertEquals(0f, m.update(a), 0.001f)
         assertTrue(m.update(b) > 50f)
     }
+
+    @Test
+    fun smoothExportScalesUpAndKeepsProcessingSize() {
+        val m = devices().first { it.id == "nokia_6230" }.modes[0]
+        val e = m.smoothExport()
+        assertTrue(e.smooth)
+        assertEquals("h264", e.codec)
+        assertEquals("mp4", e.container)
+        assertEquals(m.width, e.procW)
+        assertEquals(m.height, e.procH)
+        assertTrue("çıktı yeterince büyük: ${e.width}x${e.height}", e.height >= 360 && e.width % m.width == 0)
+        assertEquals(e.width / m.width, e.height / m.height)
+        // büyük modlar ve yerel çözünürlüklü cihazlar değişmez
+        val vhs = devices().first { it.id == "vhs_kamkorder" }.modes[0]
+        assertEquals(vhs.width, vhs.smoothExport().width)
+        val pxl = devices().first { it.id == "pxl2000" }.modes[0]
+        assertEquals(pxl.width, pxl.smoothExport().width)
+    }
+
+    @Test
+    fun smoothResizeHasNoBlockyPixelsAndKeepsFlatColors() {
+        val flat = IntArray(4 * 4) { 0xFF336699.toInt() }
+        val up = FrameSampler.resizeSmooth(flat, 4, 4, 16, 16)
+        assertTrue(up.all { it == 0xFF336699.toInt() })
+        // keskin kenar: en yakın komşuda yalnızca 2 değer olur, yumuşak büyütmede ara değerler olmalı
+        val edge = IntArray(4 * 2) { i -> if (i % 4 < 2) 0xFF000000.toInt() else 0xFFFFFFFF.toInt() }
+        val near = FrameSampler.upscaleNearest(edge, 4, 2, 16, 8).map { it and 255 }.toSet()
+        val smooth = FrameSampler.resizeSmooth(edge, 4, 2, 16, 8).map { it and 255 }.toSet()
+        assertEquals(2, near.size)
+        assertTrue("ara tonlar yok: ${smooth.size}", smooth.size > 4)
+    }
+
+    @Test
+    fun framePipelineOutputsRequestedSizeBothWays() {
+        val d = devices().first { it.id == "nokia_6230" }
+        val m = d.modes[0]
+        val look = d.videoLook!!
+        val w = 64
+        val h = 48
+        val yuv = YuvFrame(w, h, 0, 0, ByteArray(w * h) { 120 }, w, ByteArray(w * h / 4) { (128).toByte() }, ByteArray(w * h / 4) { (128).toByte() }, w / 2, 1)
+        val small = FramePipeline.process(yuv, m, look, d.videoPrescale, 1L)
+        assertEquals(m.width * m.height, small.size)
+        val e = m.smoothExport()
+        val big = FramePipeline.process(yuv, e, look, d.videoPrescale, 1L)
+        assertEquals(e.width * e.height, big.size)
+    }
+
+    @Test
+    fun chromaSoftKeepsLuminanceStructure() {
+        val w = 32
+        val h = 32
+        val src = IntArray(w * h) { i -> if ((i % w) < 16) 0xFFFF0000.toInt() else 0xFF0000FF.toInt() }
+        val base = devices().first { it.id == "nokia_6230" }.videoLook!!
+        val a = LookProcessor.processFrame(src, w, h, base.copy(chromaSoft = 0f, noiseLuma = 0f, noiseChroma = 0f), 1L, threads = 1)
+        val b = LookProcessor.processFrame(src, w, h, base.copy(chromaSoft = 1.2f, noiseLuma = 0f, noiseChroma = 0f), 1L, threads = 1)
+        var diff = 0L
+        for (i in a.indices) diff += abs(((a[i] shr 8) and 255) - ((b[i] shr 8) and 255))
+        assertTrue("renk yumuşatma etki etmeli", a.indices.any { a[it] != b[it] })
+    }
 }

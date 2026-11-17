@@ -25,6 +25,7 @@ object Help {
     const val SETTINGS_GPS = "Görüntüde hız (km/sa), rakım ve konum yazar. Konum izni ister. Açık havada daha doğru çalışır."
     const val SETTINGS_COMPASS = "Görüntüde pusula yönü ve eğim çizgisi (su terazisi) gösterir. Telefonun pusula sensörü yoksa çalışmaz."
     const val SETTINGS_MIC = "Videoda ses seviyesi çubuğu gösterir (kayıt sırasında)."
+    const val SETTINGS_SMOOTH = "Açıkken video, cihazın çözünürlüğünde işlenir ama ekranda devasa kare kare görünmesin diye yumuşak büyütülüp MP4 olarak kaydedilir (sıkıştırma bozulmaları ve gürültü korunur). Kapalıyken dosya cihazın gerçek boyutunda ve formatında (örneğin 128x96 3GP) çıkar; telefon ekranında çok büyük pikseller görürsün."
     const val SETTINGS_ORIGINAL = "Foto çekince, işlenmemiş orijinali de ayrı klasöre kaydeder. Görüntüleyicide 'Orijinal' düğmesiyle önce/sonra karşılaştırabilirsin."
     const val SETTINGS_CSV = "Video kaydederken hız, rakım, konum, yön ve eğim verisini ayrıca bir CSV dosyasına yazar (Documents/EskiKamera)."
     const val SETTINGS_TIMELAPSE = "Zaman atlamalı: iki kare arası süre."

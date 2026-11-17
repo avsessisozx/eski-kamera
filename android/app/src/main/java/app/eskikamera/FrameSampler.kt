@@ -1,5 +1,7 @@
 package app.eskikamera
 
+import kotlin.math.abs
+import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -87,6 +89,70 @@ object FrameSampler {
         for (y in 0 until dh) {
             val sy = min(sh - 1, y * sh / dh)
             for (x in 0 until dw) out[y * dw + x] = src[sy * sw + min(sw - 1, x * sw / dw)]
+        }
+        return out
+    }
+
+    private class Taps(val idx: IntArray, val w: FloatArray)
+
+    private fun mitchell(x: Float): Float {
+        val a = abs(x)
+        return when {
+            a < 1f -> (7f * a * a * a - 12f * a * a + 16f / 3f) / 6f
+            a < 2f -> (-7f / 3f * a * a * a + 12f * a * a - 20f * a + 32f / 3f) / 6f
+            else -> 0f
+        }
+    }
+
+    private fun taps(sn: Int, dn: Int): Taps {
+        val idx = IntArray(dn * 4)
+        val w = FloatArray(dn * 4)
+        for (d in 0 until dn) {
+            val c = (d + 0.5f) * sn / dn - 0.5f
+            val f = floor(c).toInt()
+            var sum = 0f
+            for (t in 0..3) {
+                val i = f - 1 + t
+                val wt = mitchell(c - i)
+                w[d * 4 + t] = wt
+                sum += wt
+                idx[d * 4 + t] = min(sn - 1, max(0, i))
+            }
+            for (t in 0..3) w[d * 4 + t] /= sum
+        }
+        return Taps(idx, w)
+    }
+
+    /** Yumuşak (Mitchell bicubic) büyütme: keskin piksel ızgarası yerine eski videolardaki gibi yumuşak geçişler verir. */
+    fun resizeSmooth(src: IntArray, sw: Int, sh: Int, dw: Int, dh: Int): IntArray {
+        if (sw == dw && sh == dh) return src
+        val hx = taps(sw, dw)
+        val vy = taps(sh, dh)
+        val tmp = FloatArray(dw * sh * 3)
+        for (y in 0 until sh) {
+            val row = y * sw
+            for (x in 0 until dw) {
+                var r = 0f; var g = 0f; var b = 0f
+                for (t in 0..3) {
+                    val p = src[row + hx.idx[x * 4 + t]]
+                    val w = hx.w[x * 4 + t]
+                    r += w * ((p shr 16) and 255); g += w * ((p shr 8) and 255); b += w * (p and 255)
+                }
+                val o = (y * dw + x) * 3
+                tmp[o] = r; tmp[o + 1] = g; tmp[o + 2] = b
+            }
+        }
+        val out = IntArray(dw * dh)
+        for (y in 0 until dh) {
+            for (x in 0 until dw) {
+                var r = 0f; var g = 0f; var b = 0f
+                for (t in 0..3) {
+                    val o = (vy.idx[y * 4 + t] * dw + x) * 3
+                    val w = vy.w[y * 4 + t]
+                    r += w * tmp[o]; g += w * tmp[o + 1]; b += w * tmp[o + 2]
+                }
+                out[y * dw + x] = (0xFF shl 24) or (clamp8(r) shl 16) or (clamp8(g) shl 8) or clamp8(b)
+            }
         }
         return out
     }

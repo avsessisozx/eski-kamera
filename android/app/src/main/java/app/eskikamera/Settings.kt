@@ -12,6 +12,8 @@ class Settings(ctx: Context) {
     var deviceId: String?
         get() = sp.getString("device", null)
         set(v) { sp.edit().putString("device", v).apply() }
+    /** Cihaz boyutu yerine izleme için yumuşak büyütülmüş video (varsayılan açık). */
+    var smoothExport: Boolean get() = b("smoothExport", true); set(v) { sp.edit().putBoolean("smoothExport", v).apply() }
     var dateStamp: Boolean get() = b("dateStamp", false); set(v) { sp.edit().putBoolean("dateStamp", v).apply() }
     /** 0 = otomatik (kamkorderlerde açık), 1 = hep açık, 2 = kapalı */
     var osdMode: Int get() = i("osdMode", 0); set(v) { sp.edit().putInt("osdMode", v).apply() }

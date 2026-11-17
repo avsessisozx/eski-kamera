@@ -26,7 +26,6 @@ import android.widget.MediaController
 import android.widget.TextView
 import android.widget.Toast
 import android.widget.VideoView
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -72,7 +71,7 @@ class ViewerActivity : AppCompatActivity() {
         setTextColor(Color.WHITE)
         gravity = Gravity.CENTER
         setPadding(dp(10), dp(8), dp(10), dp(8))
-        background = GradientDrawable().apply { setColor(0xCC202020.toInt()); cornerRadius = dp(16).toFloat() }
+        background = Ui.round(0xE617181B.toInt(), 14, this@ViewerActivity, Ui.LINE, 1)
         setOnClickListener { onClick() }
     }
 
@@ -219,23 +218,21 @@ class ViewerActivity : AppCompatActivity() {
 
     private fun confirmDelete() {
         val it = current() ?: return
-        AlertDialog.Builder(this).setTitle("Silinsin mi?").setMessage("${it.name} kalıcı olarak silinir.")
-            .setPositiveButton("Sil") { _, _ ->
-                if (Gallery.delete(this, it.uri)) {
-                    items = Gallery.list(this)
-                    index = index.coerceIn(0, maxOf(0, items.size - 1))
-                    (grid.adapter as BaseAdapter).notifyDataSetChanged()
-                    show()
-                } else Toast.makeText(this, "Silinemedi. Galeri uygulamasından silmeyi dene.", Toast.LENGTH_LONG).show()
-            }.setNegativeButton("Vazgeç", null).show()
+        Ui.confirm(this, "Silinsin mi?", "${it.name} kalıcı olarak silinir.", "Sil") {
+            if (Gallery.delete(this, it.uri)) {
+                ErrorLog.add("Kullanıcı sildi: ${it.name}")
+                items = Gallery.list(this)
+                index = index.coerceIn(0, maxOf(0, items.size - 1))
+                (grid.adapter as BaseAdapter).notifyDataSetChanged()
+                show()
+            } else Toast.makeText(this, "Silinemedi. Galeri uygulamasından silmeyi dene.", Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun info() {
         val it = current() ?: return
         val kb = it.size / 1024
-        AlertDialog.Builder(this).setTitle("Bilgi")
-            .setMessage("Dosya: ${it.name}\nBoyut: $kb KB\nTür: ${if (it.isVideo) "video" else "foto"}\nKonum: ${if (it.isVideo) "Movies" else "Pictures"}/EskiKamera")
-            .setPositiveButton("Tamam", null).show()
+        Ui.message(this, "Bilgi", "Dosya: ${it.name}\nBoyut: $kb KB\nTür: ${if (it.isVideo) "video" else "foto"}\nKonum: ${if (it.isVideo) "Movies" else "Pictures"}/EskiKamera")
     }
 
     private inner class GridAdapter : BaseAdapter() {
