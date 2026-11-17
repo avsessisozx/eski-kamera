@@ -75,4 +75,15 @@ class TranscodeInstrumentedTest {
         assertEquals(640, o.outWidth)
         assertEquals(480, o.outHeight)
     }
+
+    @Test
+    fun timingRawConversion() {
+        val dev = devices().first { it.id == "vhs_kamkorder" }
+        val src = copyAsset("sample.mp4")
+        val outDir = File(ctx.cacheDir, "t_timing").also { it.mkdirs() }
+        val logs = ArrayList<String>()
+        val t0 = System.nanoTime()
+        VideoTranscoder.transcode(ctx, Uri.fromFile(src), dev, dev.modes[0], outDir, "sonuc", { logs.add(it) }, { })
+        android.util.Log.i("EskiKamera", "TIMING_TEST toplam ${(System.nanoTime() - t0) / 1_000_000} ms | eski surum")
+    }
 }
