@@ -1,31 +1,31 @@
 # Eski Kamera - DURUM (gizli durum dosyası, durum dalında)
 
-Sürüm: 0.3.1 — Tarih: 2026-11-17 — Repo: avsessisozx/eski-kamera (public) — Sadece Android.
-Devam noktası: 0.3.1 yayınlandıktan sonra kullanıcı telefonda test edip hata raporu yapıştıracak; ondan sonra 0.4.0 (cihaz ailesine özel arayüz) yapılacak.
+Sürüm: 0.4.0 — Tarih: 2026-11-17 — Repo: avsessisozx/eski-kamera (public) — Sadece Android.
+Devam noktası: 0.4.0 yayınlandı (CI yeşil). Kullanıcı telefonda test edip hata raporu yapıştıracak. Sonra: çift kamera (0.4.1), görünüm ince ayarı (kullanıcı "şu cihaz sahte duruyor" deyince).
 
-## 0.3.1'de yapılanlar
-- Izgara sorunu: önizleme küçük kareleri filtresiz büyütüyordu ve çıktı dosyaları 128x96 gibi gerçek cihaz boyutundaydı (telefonda ~20 kat büyüyüp kare kare görünüyordu). Artık varsayılan "izleme için yumuşak büyüt" (Ayarlar > Video çıktısı): cihaz çözünürlüğünde işlenir, Mitchell bicubic ile >=480 yüksekliğe büyütülür, H.264/MP4 olarak kodlanır. Kapatılırsa eski davranış (gerçek boyut, 3GP). Piksel sanatı cihazları (levels/palette) ve yerel çözünürlüklü cihazlar (PXL-2000) etkilenmez.
-- Renk kanalı ayrıca yumuşatılıyor (chromaSoft = blur*0.9); VHS gibi renk taşması olan cihazlarda atlanır.
-- Prescale'li cihazlar (VHS, Hi8...) artık prescale çözünürlüğünde (320x240) işlenip yumuşak büyütülüyor (4 kat az piksel).
-- Hız: ses ve görüntü paralel; kodek döngüsündeki 10 ms bekleme kaldırıldı; gürültü tablo tabanlı; keskinleştirme tek (parlaklık) bulanıklığıyla; renk taşması kayan toplam; 2 kanallı renk yumuşatma. Emülatörde VHS 3 sn'lik örnek: 7085 ms -> 4837 ms. İşlem aşama süreleri artık hata raporunda (Görünüm aşamaları, Süre:).
-- Cihaz listesi açılışta seçili cihaza kayıyor.
-- Menüler/ayarlar/pencereler tek koyu stile (Ui.kt) geçti; menü, ekstra modlar, ayarlar, yardım, silme ve bilgi pencereleri.
-- Hata raporu: kaynak video süresi ve ses akışı, silme ve lens/kamera değişimi, aşama süreleri.
-- Yanlış alarm (düzeltme gerekmedi): rapordaki "ses yok" kaynak videonun sessiz olmasındandı; kısa çıktılar kısa kaynaktan; "Kamera hazır" iki kez lens düğmesinden; görüntüleyici sayısı silmeden.
+## 0.4.0'da yapılanlar
+- Pencereler içeriğe göre boyutlanıyor (en çok %80 yükseklik, %88 genişlik); kısa menüler altta (Ui.dialog anchorBottom).
+- Mod etiketi gerçek çıktıyı gösteriyor (VideoMode.mp4Label, smoothExport etiketi MP4).
+- Video kalitesi ayarı (Ayarlar): normal x3 / yüksek x6 (varsayılan) / en yüksek x10 bit hızı.
+- Temporal.kt: hareket izi (kapalı/hafif/belirgin) ve pozlama dalgalanması; önizleme, canlı kayıt ve galeri dönüştürmede (FramePipeline.process temporal parametresi).
+- rgbToYuv420 tamsayı matematiğine geçti.
+- Skin.kt: cihaz ailesine göre (icon) çerçeve, vurgu rengi, göstergeler (tuşlu: sinyal/pil, flip, dijital: odak köşeleri, kamkorder: REC/STBY köşeleri, oyun: LCD satırları, webcam: LED, termal: renk ölçeği). Ui.accent aileye göre değişiyor.
+- Flaş: fener açıkken çekilen fotoğrafa PhotoProcessor.flashLook.
+- PS Eye: 320x240 120fps modu; Camera2Interop ile AE hedef fps aralığı; telefon desteklemezse mesaj.
 
 ## Doğrulandı (CI)
-- Birim testleri (smoothExport, resizeSmooth, FramePipeline boyutları, chroma testleri) ve emülatör (API 30) testleri geçti: dönüştürme, yumuşak dışa aktarma (MP4, ses var, boyut doğru), cihaz listesi seçiliye kayıyor.
+- Derleme, birim testleri (kalite/etiket, Temporal, tamsayı YUV, PS Eye modu) ve emülatör testleri geçti.
 
-## Doğrulanmadı (gerçek telefonda test lazım)
-- Yeni görünümün gerçek cihaz videolarına ne kadar benzediği (gözle karar verilecek; referans video yok).
-- Gerçek telefonda hız (emülatör yavaş ve göreli), 704x576 gibi büyük izleme boyutunda canlı kayıtta kare düşmesi / ısınma.
-- Yeni menülerin görünümü (dar ekranda taşma vb.).
-- Önceki sürümden kalanlar: sonar, GPS, pusula, fener, ön kamera, lens seçimi, odak, hareketle çekim, döngülü kayıt geçişi, CSV.
+## Doğrulanmadı (gerçek telefonda)
+- Yeni temaların görünümü; pencerelerin dar ekranda boyutu.
+- Hareket izi ve pozlama dalgalanmasının gerçekçi görünüp görünmediği (güç ayarı tahmini).
+- Flaş görünümü.
+- 120 fps: telefon desteği ve işlem hızı (kare düşebilir). Emülatörde denenemez.
+- Gerçek telefonda kayıt hızı (büyük izleme boyutu + yeni etkiler).
+- Önceki sürümden kalanlar: sonar, GPS, pusula, fener, ön kamera, lens, odak, hareketle çekim, döngülü kayıt, CSV.
 
-## Sıradaki (0.4.0)
-- Cihaz ailesine özel arayüz: tuşlu telefon, flip, dijital kamera, VHS/kamkorder, oyun cihazları, termal; ortak şablon + aileye özel çerçeve/renk/ekran göstergesi.
-- Görünüm ince ayarı (kullanıcı geri bildirimine göre), gerekirse zamansal gürültü/ghosting.
-- rgbToYuv420 ve resizeSmooth'un daha da hızlandırılması (tam sayı aritmetik).
+## Yapılmadı (söz verilmişti)
+- Çift kamera (ön+arka birlikte): 0.4.0'a girmedi; CameraX eşzamanlı kamera + iki akışın birleştirilmesi ayrıca yapılmalı, desteklemeyen telefonda net mesaj verilecek.
 
 ## Bilinen hatalar
-- Yok (bilinen). test/baseline-0.3.0 dalı CI ölçümü için kaldı, silinebilir.
+- Yok (bilinen). test/baseline-0.3.0 dalı silinebilir.
