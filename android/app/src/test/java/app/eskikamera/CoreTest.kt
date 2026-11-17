@@ -224,4 +224,47 @@ class CoreTest {
         for (i in a.indices) diff += abs(((a[i] shr 8) and 255) - ((b[i] shr 8) and 255))
         assertTrue("renk yumuşatma etki etmeli", a.indices.any { a[it] != b[it] })
     }
+
+    @Test
+    fun exportQualityRaisesBitrateAndLabelSaysMp4() {
+        val m = devices().first { it.id == "nokia_6230" }.modes[0]
+        val n = m.smoothExport(0); val h = m.smoothExport(1); val x = m.smoothExport(2)
+        assertTrue(n.videoKbps < h.videoKbps && h.videoKbps < x.videoKbps)
+        assertTrue("etiket MP4 olmalı: ${h.label}", !h.label.contains("3GP", true))
+    }
+
+    @Test
+    fun ghostBlendsPreviousFrameAndPumpSettles() {
+        val w = 8; val h = 8
+        val dark = IntArray(w * h) { 0xFF000000.toInt() }
+        val white = { IntArray(w * h) { 0xFFFFFFFF.toInt() } }
+        val t = Temporal(2, false)
+        t.apply(dark.copyOf(), w, h)
+        val f = white()
+        t.apply(f, w, h)
+        val v = f[0] and 255
+        assertTrue("önceki kare karışmalı: $v", v in 100..250)
+        // pompalama: parlak sahneden sonra karanlık sahnede kazanç yavaş oturur
+        val p = Temporal(0, true)
+        var last = 0
+        for (i in 0 until 60) { val g = IntArray(w * h) { 0xFF404040.toInt() }; p.apply(g, w, h); last = g[0] and 255 }
+        val first = IntArray(w * h) { 0xFF404040.toInt() }
+        val p2 = Temporal(0, true)
+        for (i in 0 until 3) { val g = IntArray(w * h) { 0xFF404040.toInt() }; p2.apply(g, w, h) }
+        p2.apply(first, w, h)
+        assertTrue("kazanç yavaş yükselir: ${first[0] and 255} < $last", (first[0] and 255) <= last)
+    }
+
+    @Test
+    fun integerYuvMatchesKnownColors() {
+        val white = IntArray(4) { 0xFFFFFFFF.toInt() }
+        val y = FrameSampler.rgbToYuv420(white, 2, 2)
+        assertEquals(235, y[0][0].toInt() and 255)
+        assertEquals(128, y[1][0].toInt() and 255)
+        val red = IntArray(4) { 0xFFFF0000.toInt() }
+        val r = FrameSampler.rgbToYuv420(red, 2, 2)
+        assertTrue(abs((r[2][0].toInt() and 255) - 240) <= 2)
+        val black = IntArray(4) { 0xFF000000.toInt() }
+        assertEquals(16, FrameSampler.rgbToYuv420(black, 2, 2)[0][0].toInt() and 255)
+    }
 }

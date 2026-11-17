@@ -23,7 +23,7 @@ class SettingsDialog(
     fun show() {
         val col = LinearLayout(act).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(8), dp(16), dp(8)) }
         fun section(t: String) = col.addView(TextView(act).apply {
-            text = t.uppercase(); textSize = 13f; letterSpacing = 0.1f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD); setTextColor(Ui.AMBER); setPadding(0, dp(20), 0, dp(4))
+            text = t.uppercase(); textSize = 13f; letterSpacing = 0.1f; setTypeface(Typeface.MONOSPACE, Typeface.BOLD); setTextColor(Ui.accent); setPadding(0, dp(20), 0, dp(4))
         })
         fun desc(t: String) = col.addView(TextView(act).apply { text = t; textSize = 12f; setTextColor(Ui.TEXT_DIM); setPadding(0, 0, 0, dp(6)) })
         fun switchRow(title: String, d: String, get: () -> Boolean, set: (Boolean) -> Unit, key: String) {
@@ -52,6 +52,11 @@ class SettingsDialog(
 
         section("Video çıktısı")
         switchRow("İzleme için yumuşak büyüt", Help.SETTINGS_SMOOTH, { s.smoothExport }, { s.smoothExport = it }, "smooth")
+        choiceRow("Video kalitesi (bit hızı)", listOf("Normal", "Yüksek", "En yüksek"), listOf(0, 1, 2), { s.exportQuality }, { s.exportQuality = it }, "quality")
+        desc(Help.SETTINGS_QUALITY)
+        choiceRow("Hareket izi (hayalet)", listOf("Kapalı", "Hafif", "Belirgin"), listOf(0, 1, 2), { s.ghost }, { s.ghost = it }, "ghost")
+        desc(Help.SETTINGS_GHOST)
+        switchRow("Pozlama dalgalanması", Help.SETTINGS_PUMP, { s.pump }, { s.pump = it }, "pump")
 
         section("Görüntü üstü bilgiler")
         switchRow("Tarih damgası", Help.SETTINGS_DATE, { s.dateStamp }, { s.dateStamp = it }, "date")

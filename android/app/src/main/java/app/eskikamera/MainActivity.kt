@@ -56,6 +56,8 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
+    @Volatile private var previewTemporal: Temporal? = null
+
     private class PreviewSpec(val w: Int, val h: Int, val look: Look, val prescale: IntArray?, val mode: VideoMode?)
 
     /** Çekim türleri. */
@@ -375,8 +377,10 @@ class MainActivity : AppCompatActivity() {
     /** Kayıt, önizleme ve dönüştürmede kullanılan mod: ayar açıksa cihaz boyutu yerine yumuşak büyütülmüş izleme boyutu. */
     private fun outMode(d: Device): VideoMode? {
         val m = currentMode(d) ?: return null
+        Temporal.cfgGhost = settings.ghost
+        Temporal.cfgPump = settings.pump
         val look = d.videoLook ?: return m
-        return if (settings.smoothExport && look.levels == 0 && look.palette == 0) m.smoothExport() else m
+        return if (settings.smoothExport && look.levels == 0 && look.palette == 0) m.smoothExport(settings.exportQuality) else m
     }
 
     private fun capNeedsVideo(c: Cap) = c == Cap.VIDEO || c == Cap.TIMELAPSE || c == Cap.SLOWMO || c == Cap.LOOP
@@ -421,8 +425,8 @@ class MainActivity : AppCompatActivity() {
         deviceChip.setCompoundDrawables(ic, null, null, null)
         val videoish = previewIsVideo() && m != null
         modeChip.visibility = if (videoish) View.VISIBLE else View.GONE
-        modeChip.text = (m?.label ?: "") + "  ▾"
         val om = outMode(d)
+        modeChip.text = ((om ?: m)?.label ?: "") + "  ▾"
         val vtxt = if (m != null) "Video ${m.width}x${m.height} ${m.fps}fps" + (if (om != null && om.width != m.width) " (izleme ${om.width}x${om.height})" else "") else "video yok"
         specLine.text = "${d.era} · Foto ${d.photoWidth}x${d.photoHeight} · $vtxt" + if (d.note.isNotEmpty()) "\n${d.note}" else ""
         val on = 0xFFFFFFFF.toInt()
@@ -486,7 +490,7 @@ class MainActivity : AppCompatActivity() {
         if (devices.isEmpty()) return null
         val d = currentDevice()
         val m = outMode(d)
-        if (previewIsVideo() && m != null && d.videoLook != null) return PreviewSpec(m.width, m.height, d.videoLook, d.videoPrescale, m)
+        if (previewIsVideo() && m != null && d.videoLook != null) { previewTemporal = Temporal.fromConfig().takeIf { it.active }; return PreviewSpec(m.width, m.height, d.videoLook, d.videoPrescale, m) }
         val w = minOf(d.photoWidth, 640)
         var h = Math.round(w.toFloat() * d.photoHeight / d.photoWidth)
         if (h % 2 == 1) h++
@@ -907,7 +911,7 @@ class MainActivity : AppCompatActivity() {
             } else if (needPreview) {
                 lastPreviewNano = now
                 if (sp.mode != null) {
-                    out = FramePipeline.process(frame, sp.mode, sp.look, sp.prescale, now)
+                    out = FramePipeline.process(frame, sp.mode, sp.look, sp.prescale, now, previewTemporal)
                 } else {
                     val rgb = FrameSampler.toRgb(frame, 0, sp.w, sp.h, sp.prescale)
                     out = LookProcessor.processFrame(rgb, sp.w, sp.h, sp.look, now)

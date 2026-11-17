@@ -161,6 +161,7 @@ class LiveRecorder(
 ) {
     private val w = mode.width
     private val h = mode.height
+    private val temporal = Temporal.fromConfig().takeIf { it.active }
     private var videoPump: Pump? = null
     private var audioPump: Pump? = null
     private var coord: Coordinator? = null
@@ -254,7 +255,7 @@ class LiveRecorder(
         if (timelapse) {
             if (framesIn > 0 && (nowNano - lastKeepNano) < opts.timelapseMs * 1_000_000L) return null
         } else if (rel + tol < nextKeep) return null
-        val proc = FramePipeline.process(frame, mode, look, prescale, seedBase + framesIn)
+        val proc = FramePipeline.process(frame, mode, look, prescale, seedBase + framesIn, temporal)
         if (opts.overlay.any) {
             val data = opts.dataSource?.invoke(rel / 1_000_000L) ?: OverlayData(recording = true, recSeconds = rel / 1_000_000L)
             Overlay.drawOn(proc, w, h, opts.overlay, data)

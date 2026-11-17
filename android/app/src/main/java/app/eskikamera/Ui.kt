@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.widget.LinearLayout
+import kotlin.math.min
 import android.widget.ScrollView
 import android.widget.TextView
 
@@ -23,6 +24,9 @@ object Ui {
     const val AMBER = 0xFFFFB300.toInt()
     const val TEXT = 0xFFF2F2F2.toInt()
     const val TEXT_DIM = 0xFFA9ADB5.toInt()
+
+    /** Seçili cihaz ailesinin vurgu rengi; pencereler ve düğmeler bunu kullanır. */
+    @Volatile var accent: Int = AMBER
 
     fun dp(ctx: Context, v: Int): Int = (v * ctx.resources.displayMetrics.density).toInt()
 
@@ -51,18 +55,20 @@ object Ui {
             gravity = Gravity.CENTER
             setTextColor(if (primary) Color.BLACK else TEXT)
             setPadding(dp(ctx, 16), dp(ctx, 10), dp(ctx, 16), dp(ctx, 10))
-            background = if (primary) round(AMBER, 8, ctx) else round(Color.TRANSPARENT, 8, ctx, LINE, 1)
+            background = if (primary) round(accent, 8, ctx) else round(Color.TRANSPARENT, 8, ctx, LINE, 1)
             setOnClickListener { onClick() }
         }
 
     /** Başlıklı, yuvarlak köşeli pencere. content verilen görünümü kaydırılabilir alanda gösterir. */
     fun dialog(
         ctx: Context, title: String, content: View, scroll: Boolean = true,
-        buttons: List<Triple<String, Boolean, (Dialog) -> Unit>> = listOf(Triple("Kapat", false, { d: Dialog -> d.dismiss() }))
+        buttons: List<Triple<String, Boolean, (Dialog) -> Unit>> = listOf(Triple("Kapat", false, { d: Dialog -> d.dismiss() })),
+        anchorBottom: Boolean = false
     ): Dialog {
         val dlg = Dialog(ctx)
         dlg.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        val card = LinearLayout(ctx).apply {
+        val maxH = (ctx.resources.displayMetrics.heightPixels * 0.8f).toInt()
+        val card = MaxHeightLinear(ctx, maxH).apply {
             orientation = LinearLayout.VERTICAL
             background = round(BODY, 18, ctx, LINE, 1)
         }
@@ -71,12 +77,12 @@ object Ui {
             gravity = Gravity.CENTER_VERTICAL
             setPadding(dp(ctx, 18), dp(ctx, 14), dp(ctx, 18), dp(ctx, 12))
         }
-        head.addView(View(ctx).apply { background = round(AMBER, 3, ctx) }, LinearLayout.LayoutParams(dp(ctx, 4), dp(ctx, 20)).apply { marginEnd = dp(ctx, 10) })
-        head.addView(label(ctx, title.uppercase(), 15f, AMBER, true).apply { letterSpacing = 0.1f; typeface = Typeface.MONOSPACE })
+        head.addView(View(ctx).apply { background = round(accent, 3, ctx) }, LinearLayout.LayoutParams(dp(ctx, 4), dp(ctx, 20)).apply { marginEnd = dp(ctx, 10) })
+        head.addView(label(ctx, title.uppercase(), 15f, accent, true).apply { letterSpacing = 0.1f; typeface = Typeface.MONOSPACE })
         card.addView(head, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         card.addView(View(ctx).apply { setBackgroundColor(LINE) }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1))
         val body: View = if (scroll) ScrollView(ctx).apply { addView(content) } else content
-        card.addView(body, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
+        card.addView(body, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         if (buttons.isNotEmpty()) {
             val bar = LinearLayout(ctx).apply {
                 orientation = LinearLayout.HORIZONTAL
@@ -92,8 +98,14 @@ object Ui {
         dlg.window?.apply {
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             val dm = ctx.resources.displayMetrics
-            setLayout((dm.widthPixels * 0.92f).toInt(), (dm.heightPixels * 0.82f).toInt().coerceAtLeast(dp(ctx, 200)))
+            setLayout((dm.widthPixels * 0.88f).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT)
             setDimAmount(0.7f)
+            if (anchorBottom) {
+                setGravity(Gravity.BOTTOM)
+                val lp = attributes
+                lp.y = dp(ctx, 28)
+                attributes = lp
+            }
         }
         return dlg
     }
@@ -133,8 +145,16 @@ object Ui {
             if (!sub.isNullOrEmpty()) row.addView(label(ctx, sub, 12f, TEXT_DIM))
             col.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(ctx, 6) })
         }
-        dlg = dialog(ctx, title, col)
+        dlg = dialog(ctx, title, col, anchorBottom = true)
         dlg.show()
         return dlg
+    }
+}
+
+/** Yüksekliği en fazla maxPx olan, içeriğe göre küçülen dikey düzen (kısa menüler ekranı kaplamasın). */
+private class MaxHeightLinear(ctx: Context, private val maxPx: Int) : LinearLayout(ctx) {
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val cap = View.MeasureSpec.getSize(heightMeasureSpec).let { if (it > 0) min(it, maxPx) else maxPx }
+        super.onMeasure(widthMeasureSpec, View.MeasureSpec.makeMeasureSpec(cap, View.MeasureSpec.AT_MOST))
     }
 }

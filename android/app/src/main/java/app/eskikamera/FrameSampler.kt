@@ -205,25 +205,31 @@ object FrameSampler {
         val ch = h / 2
         val up = ByteArray(cw * ch)
         val vp = ByteArray(cw * ch)
+        // tamsayı (BT.601 sınırlı aralık, 8 bit kesirli) — kayan nokta sürümünden çok daha hızlı
         for (y in 0 until h) {
+            val row = y * w
             for (x in 0 until w) {
-                val p = argb[y * w + x]
-                val r = ((p shr 16) and 255).toFloat()
-                val g = ((p shr 8) and 255).toFloat()
-                val b = (p and 255).toFloat()
-                yp[y * w + x] = clamp8(16f + 0.257f * r + 0.504f * g + 0.098f * b).toByte()
+                val p = argb[row + x]
+                val r = (p shr 16) and 255
+                val g = (p shr 8) and 255
+                val b = p and 255
+                val v = 16 + ((66 * r + 129 * g + 25 * b + 128) shr 8)
+                yp[row + x] = (if (v > 255) 255 else v).toByte()
             }
         }
         for (y in 0 until ch) {
             for (x in 0 until cw) {
-                var r = 0f; var g = 0f; var b = 0f
-                for (dy in 0..1) for (dx in 0..1) {
-                    val p = argb[(2 * y + dy) * w + (2 * x + dx)]
-                    r += ((p shr 16) and 255); g += ((p shr 8) and 255); b += (p and 255)
-                }
-                r /= 4f; g /= 4f; b /= 4f
-                up[y * cw + x] = clamp8(128f - 0.148f * r - 0.291f * g + 0.439f * b).toByte()
-                vp[y * cw + x] = clamp8(128f + 0.439f * r - 0.368f * g - 0.071f * b).toByte()
+                var r = 0; var g = 0; var b = 0
+                val i0 = (2 * y) * w + 2 * x
+                val p0 = argb[i0]; val p1 = argb[i0 + 1]; val p2 = argb[i0 + w]; val p3 = argb[i0 + w + 1]
+                r = ((p0 shr 16) and 255) + ((p1 shr 16) and 255) + ((p2 shr 16) and 255) + ((p3 shr 16) and 255)
+                g = ((p0 shr 8) and 255) + ((p1 shr 8) and 255) + ((p2 shr 8) and 255) + ((p3 shr 8) and 255)
+                b = (p0 and 255) + (p1 and 255) + (p2 and 255) + (p3 and 255)
+                // r,g,b toplamları 4 ile ölçekli: katsayılar /1024 yerine /(256*4)
+                val u = 128 + ((-38 * r - 74 * g + 112 * b + 512) shr 10)
+                val v = 128 + ((112 * r - 94 * g - 18 * b + 512) shr 10)
+                up[y * cw + x] = (if (u < 0) 0 else if (u > 255) 255 else u).toByte()
+                vp[y * cw + x] = (if (v < 0) 0 else if (v > 255) 255 else v).toByte()
             }
         }
         return arrayOf(yp, up, vp)

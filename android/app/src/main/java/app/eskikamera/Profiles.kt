@@ -44,11 +44,16 @@ class VideoMode(
      * Gerçek cihaz boyutu telefon ekranında devasa piksellere dönüşür. İzleme için: görüntü yine cihazın
      * çözünürlüğünde işlenir, sonra yumuşak büyütülüp H.264/MP4 olarak kodlanır (bozulmalar korunur).
      */
-    fun smoothExport(): VideoMode {
+    fun smoothExport(quality: Int = 1): VideoMode {
         if (nativeW > 0 || height >= 360) return this
         val k = ((480 + height - 1) / height).coerceIn(2, 8)
-        return VideoMode(label, width * k, height * k, fps, "h264", "mp4", (videoKbps * 3).coerceIn(350, 1500), audio, width, height, true)
+        // kalite: 0 normal, 1 yüksek (varsayılan), 2 en yüksek
+        val kbps = when (quality) { 0 -> (videoKbps * 3).coerceIn(350, 1500); 2 -> (videoKbps * 10).coerceIn(2500, 6000); else -> (videoKbps * 6).coerceIn(1000, 3000) }
+        return VideoMode(mp4Label(), width * k, height * k, fps, "h264", "mp4", kbps, audio, width, height, true)
     }
+
+    /** Çıktı gerçekte MP4 olduğunda etikette 3GP yazmasın. */
+    fun mp4Label(): String = label.replace("3GP", "MP4").replace("3gp", "MP4")
 
     /** İşleme çözünürlüğü (çıktı bunun tam sayı katıysa piksel piksel büyütülür). */
     val procW: Int get() = if (nativeW > 0) nativeW else width

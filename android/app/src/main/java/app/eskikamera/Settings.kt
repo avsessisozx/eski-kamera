@@ -14,6 +14,12 @@ class Settings(ctx: Context) {
         set(v) { sp.edit().putString("device", v).apply() }
     /** Cihaz boyutu yerine izleme için yumuşak büyütülmüş video (varsayılan açık). */
     var smoothExport: Boolean get() = b("smoothExport", true); set(v) { sp.edit().putBoolean("smoothExport", v).apply() }
+    /** İzleme videosu kalitesi: 0 normal, 1 yüksek, 2 en yüksek. */
+    var exportQuality: Int get() = i("exportQuality", 1); set(v) { sp.edit().putInt("exportQuality", v).apply() }
+    /** Hareket izi: 0 kapalı, 1 hafif, 2 belirgin. */
+    var ghost: Int get() = i("ghost", 1); set(v) { sp.edit().putInt("ghost", v).apply() }
+    /** Otomatik pozlama pompalaması. */
+    var pump: Boolean get() = b("pump", true); set(v) { sp.edit().putBoolean("pump", v).apply() }
     var dateStamp: Boolean get() = b("dateStamp", false); set(v) { sp.edit().putBoolean("dateStamp", v).apply() }
     /** 0 = otomatik (kamkorderlerde açık), 1 = hep açık, 2 = kapalı */
     var osdMode: Int get() = i("osdMode", 0); set(v) { sp.edit().putInt("osdMode", v).apply() }

@@ -264,6 +264,7 @@ object VideoTranscoder {
             val frameUs = 1_000_000L / mode.fps
             val tol = min(8000L, frameUs / 4)
             val seedBase = System.nanoTime()
+            val temporal = Temporal.fromConfig().takeIf { it.active }
             var firstPts = -1L
             var nextKeep = 0L
             var inputDone = false
@@ -312,7 +313,7 @@ object VideoTranscoder {
                                 if (img != null) {
                                     val frame = try { copyFrame(img) } finally { img.close() }
                                     val t1 = System.nanoTime()
-                                    val proc = FramePipeline.process(frame, mode, look, device.videoPrescale, seedBase + framesIn)
+                                    val proc = FramePipeline.process(frame, mode, look, device.videoPrescale, seedBase + framesIn, temporal)
                                     val yuv = FrameSampler.rgbToYuv420(proc, mode.width, mode.height)
                                     val t2 = System.nanoTime()
                                     val ei = encoderInput()
